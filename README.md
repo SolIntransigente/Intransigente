@@ -1,4 +1,4 @@
-# Intransigente (Code name: Dazed)
+# Intransigente
 **WIP**
 ## Brief description
   - Intransigente is a point and click 3D adventure, with dystopic horror elements.
@@ -22,3 +22,9 @@ The game is divided as follows:
   -  It is specifically made for the game, ensuring ease of tool development and implementation, as there is little to no abstraction from the game's components to the tools.
   -  Is in charge of serializing and storing the game's dynamic data, exposing files to the game with certain IDs, creating bitmap font data from user, creating localization data, etc.
   -  Also has (will have) a level editor for all the game's geometry and entity spawn points, featuring "portals" which serve as separation between sections, and determinates if an area is drawn or not.
+
+## Considerations
+There are things to clarify, which are the following:
+  - In case of developing a translation / implementing a system that facilitates translation, it would be appreciated to contact the repository creator, as to make it easier for users to download the localization files for their games.
+  - If an error / glitch is found, apart from reporting it, making a PR to fix it would be really appreciated.
+  - In case of re-distributing the code or binaries derived from this repository (for example, for porting the game to another platform, or making a very specific fix for certain compatibility issue), it would be appreciated to contact the repository creator and notify such acts, not for legal reasons, but rather as a nice thing to do. (Please refer to the license provided for more information regarding redistribution)
