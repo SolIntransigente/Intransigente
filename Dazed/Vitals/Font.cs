@@ -30,19 +30,19 @@ namespace Dazed.Vitals
 
         public static Font? DefaultFont { get; internal set; }
 
-        public static Font GetFontInstance(string assetAbsolutePath, bool forceNewInstance = false)
+        public static Font GetFontInstance(string assetRelativePath, bool forceNewInstance = false)
         {
             if (forceNewInstance)
             {
-                Font tFont = new Font(assetAbsolutePath);
+                Font tFont = new Font(assetRelativePath);
                 return tFont;
             }
-            if (!FontInstances.TryGetValue(assetAbsolutePath, out var font))
+            if (!FontInstances.TryGetValue(assetRelativePath, out var font))
             {
-                font = new Font(assetAbsolutePath);
-                FontInstances.Add(assetAbsolutePath, font);
+                font = new Font(assetRelativePath);
+                FontInstances.Add(assetRelativePath, font);
             }
-            return font ?? throw new Exception("Font failed to be created with asset: " + assetAbsolutePath);
+            return font ?? throw new Exception("Font failed to be created with asset: " + assetRelativePath);
         }
 
         private Font(string fontDataPath)
@@ -50,7 +50,7 @@ namespace Dazed.Vitals
             //No testing for file existence, as to ensure the game throws an exception in case of the font not existing
             FontData data = Cereal.LoadData<FontData>(fontDataPath);
 
-            FontTexture = Texture2D.GetTextureInstance(data.TextureRelativePath);
+            FontTexture = Texture2D.GetTextureInstance(new TextureIdentification(data.TextureRelativePath, ImageDataType.RGBA, true));
             var charWidth = data.CharWidth;
             var charHeight = data.CharHeight;
             _isUppercaseOnly = data.IsUpperCaseOnly;

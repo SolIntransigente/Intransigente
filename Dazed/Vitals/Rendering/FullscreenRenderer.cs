@@ -5,13 +5,13 @@ namespace Dazed.Vitals.Rendering
 {
     internal class FullscreenRenderer
     {
-        readonly int _vertexBufferObject, _vertexArrayObject, _elementsBufferObject;
+        private readonly static int _vertexBufferObject, _vertexArrayObject, _elementsBufferObject;
         readonly Shader _screenShader;
-        private Vector2 _dimensions;
+        private static readonly Shader DefaultShader;
 
-        public FullscreenRenderer(Shader screenShader)
+        static FullscreenRenderer()
         {
-            _screenShader = screenShader;
+            DefaultShader = Shader.GetShaderInstance("screenShader");
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
@@ -23,16 +23,13 @@ namespace Dazed.Vitals.Rendering
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementsBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, QuadData.Indices.Length * sizeof(uint), QuadData.Indices, BufferUsageHint.StaticDraw);
 
-            PositionAttributePointer();
             GL.BindVertexArray(0);
-
-            Artist.OnWidowResize += OnWindowsResize;
-            OnWindowsResize();
         }
 
-        private void OnWindowsResize()
+        public FullscreenRenderer(Shader? screenShader = null)
         {
-            _dimensions = new Vector2(Artist.Width, Artist.Height);
+            _screenShader = screenShader ?? DefaultShader;
+            PositionAttributePointer();
         }
 
         private void PositionAttributePointer()

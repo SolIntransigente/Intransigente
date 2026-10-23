@@ -15,7 +15,7 @@ namespace Dazed.Vitals.Audio
 
         internal AudioClip(string path)
         {
-            Path = PathUtils.BaseDirectoryCombine(path);
+            Path = path;
             if (!File.Exists(Path))
                 throw new NullReferenceException($"File at path |{Path}| does not exist");
             var fileStream = File.OpenRead(Path);

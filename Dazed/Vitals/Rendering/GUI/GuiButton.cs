@@ -35,7 +35,7 @@ namespace Dazed.Vitals.Rendering.GUI
         protected override void ReloadWorldMatrix()
         {
             base.ReloadWorldMatrix();
-            _textRender?.ScreenPosition = ScreenPosition;
+            _textRender?.ScreenPosition = new(TextRender.ScreenPosition.X, ScreenPosition.Y);
             ReloadData();
         }
 
@@ -47,10 +47,10 @@ namespace Dazed.Vitals.Rendering.GUI
 
         private void ReloadData()
         {
-            float width = Size.X * 50;
-            float height = Size.Y * 50;
-            float posX = 0.5f * ((ScreenPosition.X + 1) * Artist.Width);
-            float posY = 0.5f * ((ScreenPosition.Y + 1) * Artist.Height);
+            float width = InternalScale.X * 0.5f;
+            float height = InternalScale.Y * 0.5f;
+            float posX = 0.5f * (ScreenPosition.X + 1);
+            float posY = 0.5f * (ScreenPosition.Y + 1);
 
             _x0 = (posX - width);
             _y0 = (posY - height);
@@ -60,7 +60,7 @@ namespace Dazed.Vitals.Rendering.GUI
 
         private void CheckPress()
         {
-            Vector2 mousePos = Input.MousePosition;
+            Vector2 mousePos = Input.RelativeMousePosition;
             if (mousePos.X > _x1 || mousePos.X < _x0 || mousePos.Y > _y1 || mousePos.Y < _y0)
             {
                 if (_isHovered)

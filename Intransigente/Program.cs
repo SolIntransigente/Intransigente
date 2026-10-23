@@ -8,7 +8,7 @@ namespace Intransigente
     {
         private const int SecondsForProgramAnswer = 10;
         private static DazedInstance? _instance;
-        private static readonly ExceptionThrownMessage? _onException;
+        private static ExceptionThrownMessage? _onException;
         private static bool _end;
 
         private static readonly List<string> _compiledLogs = new();

@@ -1,14 +1,18 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using Dazed.Vitals.Content;
 using StbImageSharp;
+using System.Buffers;
 
 namespace Dazed.Vitals.Rendering
 {
     public class Texture2D : Texture
     {
-        public ImageResult TextureImage
+        public ImageResult? TextureImage
         {
-            get => _image;
+            get
+            {
+                return _isReadOnly ? null : _image;
+            }
             set
             {
                 if (_isReadOnly)
@@ -18,8 +22,10 @@ namespace Dazed.Vitals.Rendering
                     Scriptorium.Warn("Image is readonly and can not be modified");
                     return;
                 }
+                if (value == null)
+                    return;
                 _image = value;
-                PushData();
+                PushData(_image);
             }
         }
         public float Width => _width;
@@ -31,7 +37,7 @@ namespace Dazed.Vitals.Rendering
         private ImageDataType _dataType;
         private byte[] _pixelsBytes = null!;
 
-        private ImageResult _image;
+        private ImageResult? _image;
         private readonly bool _isReadOnly;
 
         private static readonly Dictionary<TextureIdentification, Texture2D> InstantiatedTextures = new();
@@ -49,13 +55,15 @@ namespace Dazed.Vitals.Rendering
             : base(TextureTarget.Texture2D)
         {
             _dataType = dataType;
+            _isReadOnly = isReadOnly;
             using (var stream = File.OpenRead(path))
             {
-                _image = ImageResult.FromStream(stream, GetColorComponent());
+                var img = ImageResult.FromStream(stream, GetColorComponent());
+                PushData(img);
+                if (!_isReadOnly)
+                    _image = img;
+                stream.Dispose();
             }
-
-            _isReadOnly = isReadOnly;
-            PushData();
         }
 
         private ColorComponents GetColorComponent()
@@ -69,26 +77,33 @@ namespace Dazed.Vitals.Rendering
             };
         }
 
-        private void UpdateByteArray()
+        private void UpdateByteArray(ref byte[] data)
         {
             if (_isReadOnly)
                 return;
-            _pixelsBytes = TextureImage.Data;
+            _pixelsBytes = data;
         }
 
-        private void PushData()
+        private void PushData(ImageResult image)
         {
-            _height = _image.Height;
-            _width = _image.Width;
-            UpdateByteArray();
-            GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, TranslatePixelInternalFormat(), TextureImage.Width, TextureImage.Height, 0, TranslatePixelFormat(), PixelType.UnsignedByte, TextureImage.Data);
-            GL.TextureParameter(_textureHandle, TextureParameterName.GenerateMipmap, 1/*true*/);
-            GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Nearest);
-            GL.BindTexture(TextureTarget.Texture2D, 0);
-            if (_isReadOnly)
-                _pixelsBytes = Array.Empty<byte>();
+            _height = image.Height;
+            _width = image.Width;
+            byte[] data = ArrayPool<byte>.Shared.Rent(image.Data.Length);
+            try
+            {
+                UpdateByteArray(ref data);
+
+                GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, TranslatePixelInternalFormat(), image.Width, image.Height, 0, TranslatePixelFormat(), PixelType.UnsignedByte, image.Data);
+                GL.TextureParameter(_textureHandle, TextureParameterName.GenerateMipmap, 1/*true*/);
+                GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Nearest);
+                GL.BindTexture(TextureTarget.Texture2D, 0);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data, true);
+            }
         }
         public PixelInternalFormat TranslatePixelInternalFormat()
         {

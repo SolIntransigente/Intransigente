@@ -27,6 +27,7 @@ namespace Dazed.Vitals.Rendering.GUI
                 ReloadWorldMatrix();
             }
         }
+        protected Vector2 InternalScale { get; private set; }
         private Vector2 _scl = Vector2.One;
 
         protected Matrix4x4 World => _world;
@@ -78,8 +79,15 @@ namespace Dazed.Vitals.Rendering.GUI
 
         protected virtual void ReloadWorldMatrix()
         {
-            _scaleMatrix = Matrix4x4.CreateScale(_scl.X * 100 * (float)Artist.NormalizedWidth, -_scl.Y * 100 * (float)Artist.NormalizedHeight, 1);
-            _world = _scaleMatrix * Matrix4x4.CreateTranslation(new(_pos.X, -_pos.Y, 0));
+            float desiredX = _scl.X;
+            float desiredY = _scl.Y;
+            if (_scl.X * Artist.Width > _scl.Y * Artist.Height)
+                desiredX = _scl.X * Artist.AspectRatio;
+            else if (_scl.X * Artist.Width < _scl.Y * Artist.AspectRatio)
+                desiredY = _scl.Y * Artist.AspectRatio;
+            InternalScale = new(desiredX * 0.1f, desiredY * 0.1f);
+            _scaleMatrix = Matrix4x4.CreateScale(InternalScale.X, InternalScale.Y, 1);
+            _world = _scaleMatrix * Matrix4x4.CreateTranslation(new(_pos.X, _pos.Y, 0));
         }
     }
 }

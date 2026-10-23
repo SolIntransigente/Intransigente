@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bytesized.OpenTK.DearImGui" Version="1.3.0" />
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="10.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
   </ItemGroup>

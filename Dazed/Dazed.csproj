@@ -6,49 +6,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Company>Sol Intransigente Naciente</Company>
-    <Authors>Mectus Dynamics (Obidiix)</Authors>
-    <Product>Intransigente</Product>
+    <Authors></Authors>
+    <Product>Dazed</Product>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="4.1.0" />
+    <PackageReference Include="Emgu.CV" Version="5.0.0.6584" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="5.0.0.6584" />
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="10.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
     <PackageReference Include="SoundFlow" Version="1.4.1" />
     <PackageReference Include="StbImageSharp" Version="2.30.16" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="resources\Angor.fbx">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="resources\default.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="resources\missingtexture.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="resources\test.fbx">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="resources\test.obj">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="shaders\projectedTest.vert">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="shaders\screenShader.frag">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="shaders\screenShader.vert">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="shaders\test.frag">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="shaders\test.vert">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

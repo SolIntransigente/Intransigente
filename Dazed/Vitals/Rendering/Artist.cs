@@ -14,7 +14,6 @@ namespace Dazed.Vitals.Rendering
         static int _frameBufferTexture;
 
         private static FullscreenRenderer _fullscreenRender = null!;
-        private static readonly Shader ScreenShader;
 
         [ExposedField("missing texture path")]
         private static AssetPath _missingTexturePath;
@@ -108,11 +107,13 @@ namespace Dazed.Vitals.Rendering
             {
                 _viewportWidth = (int)(Height * _desiredCameraAspectRatio);
                 _viewportX = (Width - _viewportWidth) / 2f;
+                _viewportY = 0;
             }
             else if(Width * _desiredCameraWidth < Height * _desiredCameraHeight)
             {
                 _viewportHeight = (int)(Width * _desiredCameraAspectRatio);
                 _viewportY = (Height - _viewportHeight) / 2f;
+                _viewportX = 0;
             }
             OnWidowResize?.Invoke();
         }
@@ -137,7 +138,6 @@ namespace Dazed.Vitals.Rendering
         static Artist()
         {
             ExposedData.RetrieveAll(typeof(Artist), null);
-            ScreenShader = Shader.GetShaderInstance("screenShader");
             MissingTexture = Texture2D.GetTextureInstance(_missingTexturePath!.AssetRelativePath);
 
             var baseParams = Light.BaseParameters;
@@ -175,7 +175,7 @@ namespace Dazed.Vitals.Rendering
         internal static void Initialize()
         {
             SetUpFrameBuffer();
-            _fullscreenRender = new FullscreenRenderer(ScreenShader);
+            _fullscreenRender = new FullscreenRenderer();
         }
 
         private static void SetUpFrameBuffer()
@@ -264,13 +264,14 @@ namespace Dazed.Vitals.Rendering
 
             GL.Viewport(0, 0, _desiredCameraWidth, _desiredCameraHeight);
             RenderMeshed();
+            GL.Disable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.CullFace);
 
             GL.Viewport((int)_viewportX, (int)_viewportY, _viewportWidth, _viewportHeight);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             RenderFramebuffer();
             GL.Viewport(0, 0, Width, Height);
 
-            GL.Clear(ClearBufferMask.DepthBufferBit);
             GuiRendering();
         }
 
@@ -281,11 +282,6 @@ namespace Dazed.Vitals.Rendering
 
         private static void RenderMeshed()
         {
-            GL.ClearColor(Color.LightCyan);
-            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            GL.Enable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.CullFace);
-
             ArrangePasses();
             ArrangeRenderedLights();
             CurrentPointLightCount = CurrentSpotLightCount = 0;
@@ -300,24 +296,30 @@ namespace Dazed.Vitals.Rendering
                     RenderedLights[L].SetValuesTo(LitMaterials[i], GetSentParameters(LightCategories[L]!.Value));
                 }
             }
+            if (ViewportCamera.MainCamera == null)
+            {
+                GL.ClearColor(Color.Black);
+                GL.Clear(ClearBufferMask.ColorBufferBit);
+                return;
+            }
+
+            GL.ClearColor(Color.LightCyan);
+            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.CullFace);
 
             RenderingData data;
-            if (ViewportCamera.MainCamera != null)
+            data = new(ViewportCamera.MainCamera.Projection, ViewportCamera.MainCamera.View, ViewportCamera.MainCamera.Transform.Position, ViewportCamera.MainCamera.ViewFrustum);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+            RenderPass(RenderingPass.geometryFirst, data);
+            if (DebugState.DebugMedium)
             {
-                data = new(ViewportCamera.MainCamera.Projection, ViewportCamera.MainCamera.View, ViewportCamera.MainCamera.Transform.Position, ViewportCamera.MainCamera.ViewFrustum);
-                GL.Clear(ClearBufferMask.DepthBufferBit);
-                RenderPass(RenderingPass.geometryFirst, data);
-                if (DebugState.DebugMedium)
-                {
-                    GL.Disable(EnableCap.DepthTest);
-                    GL.Disable(EnableCap.CullFace);
-                    DrawTemporal(data);
-                    GL.Enable(EnableCap.DepthTest);
-                    GL.Enable(EnableCap.CullFace);
-                }
+                GL.Disable(EnableCap.DepthTest);
+                GL.Disable(EnableCap.CullFace);
+                DrawTemporal(data);
+                GL.Enable(EnableCap.DepthTest);
+                GL.Enable(EnableCap.CullFace);
             }
-            else if(DebugState.DebugMedium)
-                Scriptorium.Warn("Main camera is null!");
 
             //Secondary Camera (if available)
             if (_secondaryCamera != null)
@@ -326,9 +328,6 @@ namespace Dazed.Vitals.Rendering
                 GL.Clear(ClearBufferMask.DepthBufferBit);
                 RenderPass(RenderingPass.geometrySecond, data);
             }
-            
-            GL.Disable(EnableCap.DepthTest);
-            GL.Disable(EnableCap.CullFace);
         }
 
         private static LightParameters GetSentParameters(LightCategory lightCategory)
@@ -442,7 +441,7 @@ namespace Dazed.Vitals.Rendering
                 Renderable? r = AllRender[index];
                 if (r == null || !r.AllowRendering)
                     continue;
-                r.Render(pass ==  RenderingPass.geometryFirst ? data!.Value : default);
+                r.Render(!pass.HasFlag(RenderingPass.userInterface) ? data!.Value : default);
             }
         }
 

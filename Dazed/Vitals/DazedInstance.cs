@@ -3,11 +3,10 @@ using System.Diagnostics;
 using System.Numerics;
 using Dazed.Vitals.AssetReference;
 using Dazed.Vitals.Audio;
-using Dazed.Vitals.Content;
-using Dazed.Vitals.Localization;
 using Dazed.Vitals.Paisaje;
 using Dazed.Vitals.Rendering;
 using Dazed.Vitals.Rendering.GUI;
+using Dazed.Vitals.VideoPlay;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -28,19 +27,19 @@ namespace Dazed.Vitals
         private AssetPath _playerMeshPath;
         [ExposedField("testSound")]
         private AssetPath _testSoundPath;
-        private SoundEmitter _testEmitter;
-        static float rotY;
-        static Shader _testShader;
-        static Material _testMaterial;
-        static Mesh _testMesh;
-        static Transform _testMeshTransform;
-        static SpotLight _testLight;
+        //private SoundEmitter _testEmitter;
+        //static float rotY;
+        //static Shader _testShader;
+        //static Material _testMaterial;
+        //static Mesh _testMesh;
+        //static Transform _testMeshTransform;
+        //static GuiButton _testButton;
         /// <summary>
         /// True when the game is ran to be played
         /// </summary>
         internal static bool IsContextRuntime { get; private set; }
 
-        public static bool Quited { get; private set; }
+        public static bool HasQuit { get; private set; }
 
         private readonly static KeyCombination _reloadShadersCombo = new(Keys.LeftControl, Keys.F8);
 
@@ -58,27 +57,42 @@ namespace Dazed.Vitals
             ExposedData.RetrieveAll(GetType(), this);
             Artist.Initialize();
             Artist.SetResolution(ClientSize.X, ClientSize.Y);
-
-            _testMeshTransform = new();
-            Font.DefaultFont = Font.GetFontInstance(_defaultFont.AssetRelativePath);
-
-            _testLight = new(Vector3.Zero, new(0.4f, 0.4f, 0.4f), Vector3.Zero);
-            DirectionalLight dirL = new(-Vector3.UnitZ, Color.White, 1);
-            _testShader = Shader.GetShaderInstance("default.vert", "default.frag");
-            _testMaterial = Material.GetMaterialInstance(_testShader, true);
-            _testMesh = Mesh.GetMeshInstance(_playerMeshPath.AssetRelativePath, _testMaterial);
-            DebugViewportCamera = new(90);
-
-            _testEmitter = new(_testSoundPath, SoundEmissionSettings.DefaultLooped);
-
+            
             UpdateFrequency = CurrentMonitor.CurrentVideoMode.RefreshRate;
             VSync = VSyncMode.Adaptive;
+
+            SplashScreen.InitializeSplashScreen();
+            Phone.SubscribeToDrawCall(SplashScreen.Draw);
+            SplashScreen.OnEndReached += EndSplashScreen;
+
+            //TEST DATA
+            //_testMeshTransform = new();
+            //Font.DefaultFont = Font.GetFontInstance(_defaultFont.AssetRelativePath);
+
+            //DirectionalLight dirL = new(-Vector3.UnitZ, Color.White, 1);
+            //_testButton = new("Test");
+            //_testButton.Size = new(4, 2);
+            //_testButton.TextRender.AddPosition(-0.15f, 0);
+            //_testButton.OnButtonPress += () => { Scriptorium.Warn("hey"); };
+            //_testShader = Shader.GetShaderInstance("default.vert", "default.frag");
+            //_testMaterial = Material.GetMaterialInstance(_testShader, true);
+            //_testMesh = Mesh.GetMeshInstance(_playerMeshPath.AssetRelativePath, _testMaterial);
+            //DebugViewportCamera = new(90);
+
+            //_testEmitter = new(_testSoundPath, SoundEmissionSettings.DefaultLooped);
+        }
+
+        private void EndSplashScreen()
+        {
+            Phone.UnSubscribeToDrawCall(SplashScreen.Draw);
+            SplashScreen.OnEndReached -= EndSplashScreen;
+            //TODO: Load main menu / start of game
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
             Phone.Quit();
-            Quited = true;
+            HasQuit = true;
             LastUpdateCall.Stop();
             OmniSonus.Terminate();
             base.OnClosing(e);
@@ -90,53 +104,45 @@ namespace Dazed.Vitals
             Artist.SetResolution(e.Width, e.Height);
         }
 
-        protected override void OnMove(WindowPositionEventArgs e)
-        {
-            base.OnMove(e);
-        }
-
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             LastUpdateCall.Start();
             base.OnUpdateFrame(args);
             Chronos.UpdateDeltaTime(Convert.ToSingle(args.Time));
             Input.UpdateInputState(KeyboardState, MouseState);
-            movement = Vector3.Zero;
-            if (Input.IsKeyDown(Keys.W))
-                movement.Z += -1;
-            if (Input.IsKeyDown(Keys.S))
-                movement.Z += 1;
-            if (Input.IsKeyDown(Keys.D))
-                movement.X += 1;
-            if (Input.IsKeyDown(Keys.A))
-                movement.X += -1;
-            if (Input.IsKeyDown(Keys.E))
-                movement.Y += 1;
-            if (Input.IsKeyDown(Keys.Q))
-                movement.Y += -1;
-            DebugViewportCamera.Move(movement, Chronos.DeltaTime);
-            _testLight.Position = DebugViewportCamera.Transform.Position;
+            //movement = Vector3.Zero;
+            //if (Input.IsKeyDown(Keys.W))
+            //    movement.Z += -1;
+            //if (Input.IsKeyDown(Keys.S))
+            //    movement.Z += 1;
+            //if (Input.IsKeyDown(Keys.D))
+            //    movement.X += 1;
+            //if (Input.IsKeyDown(Keys.A))
+            //    movement.X += -1;
+            //if (Input.IsKeyDown(Keys.E))
+            //    movement.Y += 1;
+            //if (Input.IsKeyDown(Keys.Q))
+            //    movement.Y += -1;
+            //DebugViewportCamera.Move(movement, Chronos.DeltaTime);
 
-            if (Input.IsKeyDown(Keys.Left))
-                rotY += -MathTeacher.DegreesToRadians * Chronos.DeltaTime * 50;
-            if (Input.IsKeyDown(Keys.Right))
-                rotY += MathTeacher.DegreesToRadians * Chronos.DeltaTime * 50;
-            debugViewRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, rotY);
-            DebugViewportCamera.Transform.Rotation = debugViewRotation;
-            _testLight.Direction = DebugViewportCamera.Forward;
-            _testLight.Intensity = 20;
+            //if (Input.IsKeyDown(Keys.Left))
+            //    rotY += -Chronos.DeltaTime;
+            //if (Input.IsKeyDown(Keys.Right))
+            //    rotY += Chronos.DeltaTime;
+            //debugViewRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, rotY);
+            //DebugViewportCamera.Transform.Rotation = debugViewRotation;
 #if DEBUG
-            if(Input.IsKeyDown(Keys.F10))
+            if (Input.IsKeyDown(Keys.F10))
                 Console.Clear();
 
-            if (Input.IsKeyDown(Keys.I))
-                _testMeshTransform.MoveGlobal(Vector3.UnitZ * Chronos.DeltaTime);
-            if (Input.IsKeyDown(Keys.J))
-                _testMeshTransform.MoveGlobal(-Vector3.UnitX * Chronos.DeltaTime);
-            if (Input.IsKeyDown(Keys.K))
-                _testMeshTransform.MoveGlobal(-Vector3.UnitZ * Chronos.DeltaTime);
-            if (Input.IsKeyDown(Keys.L))
-                _testMeshTransform.MoveGlobal(Vector3.UnitX * Chronos.DeltaTime);
+            //if (Input.IsKeyDown(Keys.I))
+            //    _testMeshTransform.MoveGlobal(Vector3.UnitZ * Chronos.DeltaTime);
+            //if (Input.IsKeyDown(Keys.J))
+            //    _testMeshTransform.MoveGlobal(-Vector3.UnitX * Chronos.DeltaTime);
+            //if (Input.IsKeyDown(Keys.K))
+            //    _testMeshTransform.MoveGlobal(-Vector3.UnitZ * Chronos.DeltaTime);
+            //if (Input.IsKeyDown(Keys.L))
+            //    _testMeshTransform.MoveGlobal(Vector3.UnitX * Chronos.DeltaTime);
             if (_reloadShadersCombo.FirstHoldSecondPressed())
             {
                 ProgramFuncs.RetrieveDataFiles();
@@ -158,18 +164,16 @@ namespace Dazed.Vitals
                         break;
                 }
             }
-
-            LastUpdateCall.Restart();
             Phone.Update();
+            LastUpdateCall.Restart();
         }
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
-            if(Quited)
+            if(HasQuit)
                 return;
-            Mundo.DrawPaisaje(DebugViewportCamera.ViewFrustum);
             Phone.Draw();
-            _testMesh.ApplyRelativeToTransform(_testMeshTransform.World);
+            //_testMesh.ApplyRelativeToTransform(_testMeshTransform.World);
             Artist.DrawFrame(args);
             SwapBuffers();
         }

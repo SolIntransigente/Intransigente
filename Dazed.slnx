@@ -1,8 +1,14 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x86" />
+  </Configurations>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
   <Project Path="Dazed/Dazed.csproj" />
   <Project Path="DazedGUITools/DazedGUITools.csproj" />
-  <Project Path="Intransigente/Intransigente.csproj" Id="f5831b2e-2637-4a40-aa81-1eb523dcb7c6" />
+  <Project Path="Intransigente/Intransigente.csproj" Id="f5831b2e-2637-4a40-aa81-1eb523dcb7c6">
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
 </Solution>

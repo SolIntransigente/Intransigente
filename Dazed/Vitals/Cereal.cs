@@ -27,11 +27,11 @@ public static class Cereal
         }
     }
 
-    public static T LoadData<T>(string absolutePath)
+    public static T LoadData<T>(string path)
     {
-        var json = File.ReadAllText(absolutePath);
+        var json = File.ReadAllText(path);
         if(DebugState.DebugFull)
-            Scriptorium.Warn($"File loaded at path: {absolutePath} | Of type: {typeof(T)}");
+            Scriptorium.Warn($"File loaded at path: {path} | Of type: {typeof(T)}");
         return JsonConvert.DeserializeObject<T>(json) ?? throw new InvalidOperationException();
     }
 }

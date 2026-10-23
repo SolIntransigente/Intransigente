@@ -29,14 +29,9 @@ public static class Mundo
 
     private static readonly Dictionary<string, Type> Elements = new();
 
-    private static SectionPortal _testPortal;
 
     static Mundo()
     {
-        _testPortal = (SectionPortal) PaisajeDynamic.Create(typeof(SectionPortal), "testPortal", new(
-            [new PaisajeFieldData("min", 1), new PaisajeFieldData("max", 0)],
-            [new Vector3(3, 5, 3), new Vector3(-3, -5, -3)]));
-        
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         List<Type> types = [];
         List<PaisajeElementAttribute> attributes = [];
@@ -71,9 +66,6 @@ public static class Mundo
 
     internal static void DrawPaisaje(Frustum frustum)
     {
-        if(_testPortal.IsDestroyed)
-            return;
-        var isInFrustum = _testPortal.IsInFrustum(frustum);
     }
     
     public static Type GetElementType(string identifier) => Elements[identifier];
