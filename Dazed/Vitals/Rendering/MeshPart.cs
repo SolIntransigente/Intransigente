@@ -43,7 +43,8 @@ namespace Dazed.Vitals.Rendering
             VertexCount = vertexCount;
             var vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, arrayBufferData.Length * ByteSizeOfHalf, arrayBufferData, BufferUsageHint.StaticDraw);
+            GL.BufferStorage(BufferTarget.ArrayBuffer, arrayBufferData.Length * ByteSizeOfHalf, arrayBufferData, BufferStorageFlags.None);
+            //GL.BufferData(BufferTarget.ArrayBuffer, arrayBufferData.Length * ByteSizeOfHalf, arrayBufferData, BufferUsageHint.StaticDraw);
 
             var elementBufferObject = GL.GenBuffer();
             _vertexArrayObject = GL.GenVertexArray();
@@ -51,7 +52,8 @@ namespace Dazed.Vitals.Rendering
             PartMaterial = material;
 
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
+            GL.BufferStorage(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferStorageFlags.None);
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
 
             GL.BindVertexArray(0);
         }

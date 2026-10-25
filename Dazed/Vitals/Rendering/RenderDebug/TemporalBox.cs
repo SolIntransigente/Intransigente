@@ -27,7 +27,8 @@ internal class TemporalBox : TemporalRenderable
 	{
 		var vertexBufferObject = GL.GenBuffer();
 		GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject);
-		GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
+		GL.BufferStorage(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferStorageFlags.None);
+		//GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
 
 		var elementBufferObject = GL.GenBuffer();
 		Vao = GL.GenVertexArray();
@@ -37,7 +38,8 @@ internal class TemporalBox : TemporalRenderable
 		GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
 		
 		GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-		GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
+		GL.BufferStorage(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint), Indices, BufferStorageFlags.None);
+		//GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
 
 		GL.BindVertexArray(0);
 	}
