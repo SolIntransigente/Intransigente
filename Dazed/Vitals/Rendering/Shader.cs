@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Dazed.Vitals.FileHandling;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using Vector2 = OpenTK.Mathematics.Vector2;
@@ -81,16 +82,19 @@ namespace Dazed.Vitals.Rendering
 
         private void ReloadShader() => InitializeWithPaths(_pathVert, _pathFrag);
 
-        private void InitializeWithPaths(string vertPath, string fragPath)
+        private void InitializeWithPaths(string vertFile, string fragFile)
         {
             //Assuming that if one is empty the other also is
             if (string.IsNullOrEmpty(_pathFrag))
             {
-                _pathVert = vertPath;
-                _pathFrag = fragPath;
+                _pathVert = Path.Combine(PathUtils.ShadersDirectory, vertFile);
+                _pathFrag = Path.Combine(PathUtils.ShadersDirectory, fragFile);
             }
-            var vertexShaderSource = File.ReadAllText(vertPath);
-            var fragmentShaderSource = File.ReadAllText(fragPath);
+            var vertexShaderSource = Secretary.ReadContent(PathUtils.ShadersDirectory, _pathVert, filePathIsAbsolute : true);
+            var fragmentShaderSource = Secretary.ReadContent(PathUtils.ShadersDirectory, _pathFrag, filePathIsAbsolute: true);
+
+            if (string.IsNullOrEmpty(vertexShaderSource) || string.IsNullOrEmpty(vertexShaderSource))
+                throw new Exception($"Either fragment shader at path <{_pathFrag}> or vertex shader at path <{_pathVert}> found an error while trying to be loaded.");
 
             _vertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(_vertexShader, vertexShaderSource);
@@ -98,7 +102,7 @@ namespace Dazed.Vitals.Rendering
                 if (_handle != 0)
                     return;
                 else
-                    throw new Exception("Error on compilation, check command console for more info.");
+                    throw new Exception("Error on vertex shader compilation, check command console for more info.");
 
             _fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
             GL.ShaderSource(_fragmentShader, fragmentShaderSource);
@@ -106,7 +110,7 @@ namespace Dazed.Vitals.Rendering
                 if (_handle != 0)
                     return;
                 else
-                    throw new Exception("Error on compilation, check command console for more info.");
+                    throw new Exception("Error on fragment shader compilation, check command console for more info.");
 
             if (_handle == 0)
                 _handle = GL.CreateProgram();
