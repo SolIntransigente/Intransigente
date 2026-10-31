@@ -12,7 +12,6 @@ namespace Dazed.Vitals.VideoPlay
         private readonly string _path;
         private readonly VideoCapture _capture;
         private readonly VideoAudio _audio;
-        //TODO: replace with a set amount of loaded frames, as to avoid allocating too many frames in a short period of time.
         private int _currentOffset;
         private readonly FrameData[] _framesData;
         private readonly float _interval, _aspectRatio;
@@ -24,7 +23,7 @@ namespace Dazed.Vitals.VideoPlay
         private short _dWidth, _dHeight;
         private short _dX, _dY;
 
-        private Stopwatch _elapsedSinceUpdate;
+        private readonly Stopwatch _elapsedSinceUpdate;
 
         public override bool AllowRendering => IsVisible;
         public override RenderingPass RenderPass => RenderingPass.userInterface;
@@ -75,8 +74,7 @@ namespace Dazed.Vitals.VideoPlay
             {
                 Thread.Sleep(10);
             }
-            var data = (byte[]) mat.GetData(false);
-            _framesData[_currentOffset++] = new(data);
+            _framesData[_currentOffset++] = new(mat.GetData(false));
         }
 
         public new void Dispose()
@@ -131,9 +129,7 @@ namespace Dazed.Vitals.VideoPlay
                 }
             }
             PrepareFrame(ref _framesData[_currentFrame]);
-            
-            _framesData[_currentFrame] = FrameData.Empty;
-            GC.Collect();
+
             GL.Viewport(_dX, _dY, _dWidth, _dHeight);
             _videoPlayerRenderer.Render(_textureHandle);
             GL.Viewport(0, 0, Artist.Width, Artist.Height);
@@ -142,11 +138,25 @@ namespace Dazed.Vitals.VideoPlay
         private void PrepareFrame(ref FrameData frame)
         {
             GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
-
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R3G3B2, _width, _height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, frame.Data);
-            GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.BindTexture(TextureTarget.Texture2D, 0);
+            try
+            {
+                if (frame == null)
+                    throw new NullReferenceException(nameof(frame));
+                byte[] pixels = frame.ToArray();
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R3G3B2, _width, _height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, pixels);
+                GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            }
+            catch(Exception ex)
+            {
+                Scriptorium.Error($"Frame preparation for frame at index <{_currentFrame}> for file <{_path}> failed with the following exception");
+                Scriptorium.LogException(ex);
+            }
+            finally
+            {
+                frame?.Dispose();
+                GL.BindTexture(TextureTarget.Texture2D, 0);
+            }
         }
     }
 }
