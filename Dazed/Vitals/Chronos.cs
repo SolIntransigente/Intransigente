@@ -16,5 +16,10 @@ namespace Dazed.Vitals
         {
             _deltaTime = deltaTime;
         }
+
+        public static void ExternalUpdate(float deltaTime)
+        {
+            _deltaTime = deltaTime;
+        }
     }
 }

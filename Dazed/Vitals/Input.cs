@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Dazed.Vitals
 {
-    internal static class Input
+    public static class Input
     {
         private static KeyboardState _kState = null!;
         private static MouseState _mState = null!;
@@ -23,7 +23,7 @@ namespace Dazed.Vitals
         public static Vector2 MouseDelta => _mouseDelta;
         private static Vector2 _mouseDelta;
 
-        internal static void UpdateInputState(KeyboardState keyboardState,  MouseState mouseState)
+        public static void UpdateInputState(KeyboardState keyboardState,  MouseState mouseState)
         {
             _kState = keyboardState;
             _mState = mouseState;

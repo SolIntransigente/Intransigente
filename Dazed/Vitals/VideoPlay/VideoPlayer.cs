@@ -140,12 +140,13 @@ namespace Dazed.Vitals.VideoPlay
             GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
             try
             {
-                if (frame == null)
-                    throw new NullReferenceException(nameof(frame));
-                byte[] pixels = frame.ToArray();
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R3G3B2, _width, _height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, pixels);
-                GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-                GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                if (frame != null)
+                {
+                    byte[] pixels = frame.ToArray();
+                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R3G3B2, _width, _height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, pixels);
+                    GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                    GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                }
             }
             catch(Exception ex)
             {

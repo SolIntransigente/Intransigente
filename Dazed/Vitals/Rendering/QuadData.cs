@@ -21,7 +21,7 @@ namespace Dazed.Vitals.Rendering
             -1f,  1f, 0.0f, 0.0f, 0.0f  // top left
         };
         /// <summary>
-        /// Inversed texture coords version
+        /// Inversed (in Y-axis) texture coordinates version, for object that may represent images that would look upside-down by default.
         /// </summary>
         public static readonly float[] VertexPosAndInvTexturePosData =
         {

@@ -156,21 +156,13 @@ namespace Dazed.Vitals.Rendering
 
         private static bool CompileShader(int shader)
         {
-            try
-            {
-                GL.CompileShader(shader);
+            GL.CompileShader(shader);
 
-                GL.GetShader(shader, ShaderParameter.CompileStatus, out var code);
-                if (code != (int)All.True)
-                {
-                    var infoLog = GL.GetShaderInfoLog(shader);
-                    throw new Exception($"Error occurred whilst compiling Shader({shader}).\n\n{infoLog}");
-                }
-            }
-            catch(Exception ex)
+            GL.GetShader(shader, ShaderParameter.CompileStatus, out var code);
+            if (code != (int)All.True)
             {
-                Scriptorium.LogException(ex);
-                return false;
+                var infoLog = GL.GetShaderInfoLog(shader);
+                throw new Exception($"Error occurred whilst compiling Shader({shader}).\n\n{infoLog}");
             }
             return true;
         }
