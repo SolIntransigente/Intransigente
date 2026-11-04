@@ -13,13 +13,20 @@ public abstract class Entity : PaisajeObject, IDynamic, IEntity
     //TODO: implement this
     public abstract string ObjectSharedName {get; protected set;}
 
-    public override bool IsDynamic => true;
-
+    /// <summary>
+    /// Equivalent to <seealso cref="Exists"/>, marks that it's not disposed and if it has been initialized
+    /// </summary>
     public bool Available => m_initialized && !m_disposed;
     public bool m_disposed;
     public bool m_initialized;
 
     public Mesh? InstantiatedMesh => m_mesh;
+
+    /// <summary>
+    /// Equivalent to <seealso cref="Available"/>, marks that it's not disposed and if it has been initialized
+    /// </summary>
+    public bool Exists => Available;
+
     protected Mesh? m_mesh;
     protected Material? m_material;
     protected override void OnCreation()

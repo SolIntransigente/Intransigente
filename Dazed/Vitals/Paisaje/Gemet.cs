@@ -11,8 +11,6 @@ public class Gemet : PaisajeObject, IGeometry
     public GemetRenderer Renderer => m_renderer;
     private GemetRenderer m_renderer = null!;
 
-    public override bool IsDynamic { get => false; }
-
     public void AssignData(string pathToMaterialData, Half[] verts, Half[] texCoords, ushort[] indices)
     {
         m_renderer = new(pathToMaterialData, verts, texCoords, indices);

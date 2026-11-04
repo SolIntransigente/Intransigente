@@ -4,10 +4,9 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Dazed.Vitals.Paisaje;
 
-public class GemetRenderer : Renderable
+public class GemetRenderer
 {
     private const byte ByteSizeOfHalf = 2;
-    public override bool AllowRendering => true;
     private readonly ushort m_indicesCount;
 
     public Material GemetMaterial => m_mat;
@@ -65,7 +64,7 @@ public class GemetRenderer : Renderable
         return vertData;
     }
 
-    public override void Render(in RenderingData data)
+    public void Render(in RenderingData data)
     {
         if (m_mat == null)
         {
@@ -80,9 +79,8 @@ public class GemetRenderer : Renderable
         GL.BindVertexArray(0);
     }
 
-    public new void Dispose()
+    public void Dispose()
     {
-        base.Dispose();
         GL.DeleteVertexArray(m_vao);
     }
 }

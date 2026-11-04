@@ -1,21 +1,13 @@
 ﻿using Dazed.Vitals.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Newtonsoft.Json;
 
 namespace Dazed.Vitals.Paisaje
 {
-    public struct PaisajeVariables
+    public struct PaisajeVariables(float ambientLightIntensity, Color ambientLightColor, string? skyboxPath, string[] context)
     {
-        public float AmbientLightIntensity;
-        public Color AmbientLightColor;
-        public string? SkyboxPath;
-
-        public PaisajeVariables(float ambientLightIntensity, Color ambientLightColor, string? skyboxPath)
-        {
-            AmbientLightColor = ambientLightColor;
-            AmbientLightIntensity = ambientLightIntensity;
-            SkyboxPath = skyboxPath;
-        }
+        [JsonProperty("li")] public float AmbientLightIntensity = ambientLightIntensity;
+        [JsonProperty("lc")] public Color AmbientLightColor = ambientLightColor;
+        [JsonProperty("s")] public string? SkyboxPath = skyboxPath;
+        [JsonProperty("c")] public string[] Context = context;
     }
 }

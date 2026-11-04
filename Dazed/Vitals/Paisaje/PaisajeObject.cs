@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Dazed.Vitals.Rendering;
 
 namespace Dazed.Vitals.Paisaje
 {
@@ -8,30 +9,35 @@ namespace Dazed.Vitals.Paisaje
     public abstract class PaisajeObject
     {
         internal uint ObjectUniqueIdentifier { get; private set; }
-        public abstract bool IsDynamic { get; }
 
-        internal static PaisajeObject ConstructObject(Type type, uint id, ElementData data)
+        internal static PaisajeObject ConstructObject(Type type, uint id, SerializedElementData data)
         {
             var rawObj = Activator.CreateInstance(type)!;
             ((PaisajeObject)rawObj).ObjectUniqueIdentifier = id;
-            if (!((PaisajeObject)rawObj).IsDynamic)
+            if (data.Dynamic == null)
                 return (PaisajeObject)rawObj;
-            ((PaisajeObject)rawObj).InterpretData(data);
+            if (data.Geometry != null)
+            {
+                var value = data.Geometry.Value;
+                ((IGeometry)(rawObj)).AssignData(value.MaterialDataPath, value.VertexData, value.TextureCoordinates, value.Indices);
+            }
+            ((PaisajeObject)rawObj).InterpretData(data.Dynamic.Value);
             ((PaisajeObject)rawObj).OnCreation();
             Phone.SubscribeToApplicationQuit(((IDynamic)rawObj).Destroy);
             return (PaisajeObject)rawObj;
         }
 
         protected virtual void OnCreation(){}
+        public virtual void DrawUpdate(in RenderingData data){}
 
-        private void InterpretData(ElementData data)
+        private void InterpretData(SerializedDynamic data)
         {
-            for (var i = 0; i < data.Fields.Length; i++)
+            for (var i = 0; i < data.FieldsAndParameters.Length; i++)
             {
-                if (data.Fields[i].FieldName.StartsWith("param_"))
-                    InterpretAsParameter(data.Fields[i].FieldName, data.Data[data.Fields[i].ObjectFieldIndex]);
+                if (data.FieldsAndParameters[i].StartsWith("param_"))
+                    InterpretAsParameter(data.FieldsAndParameters[i], data.Values[i]);
                 else
-                    InterpretAsField(data.Fields[i].FieldName, data.Data[data.Fields[i].ObjectFieldIndex]);
+                    InterpretAsField(data.FieldsAndParameters[i], data.Values[i]);
             }
         }
         private void InterpretAsField(string dataField, object o)

@@ -4,8 +4,6 @@ namespace Dazed.Vitals.Rendering
 {
     public class Material
     {
-        private readonly Material? _parent;
-        private bool IsVariant => _parent != null;
         private readonly Shader _materialShader;
         private readonly Dictionary<string, int> _keyToIndex = [];
         private readonly List<MaterialParameter> _params = [];
@@ -46,24 +44,6 @@ namespace Dazed.Vitals.Rendering
             Indexes.Add(data.ShaderIdentification, InstancedMaterials.Count);
             InstancedMaterials.Add(m);
             return m;
-        }
-
-        public static Material GetMaterialVariant(Material mat)
-        {
-            Material variant = new(mat);
-            mat.OnParameterChange += variant.UpdateFromParent;
-            return variant;
-        }
-
-        internal void UpdateFromParent(int index)
-        {
-            if (!IsVariant)
-            {
-                if(DebugState.DebugLow)
-                    Scriptorium.Warn("A material base instance should not be updating from a parent, as it shouldn't have one");
-                return;
-            }
-            _params[index].SetValue(_parent!._params[index].Value);
         }
 
         public void UseMaterial()
@@ -210,17 +190,5 @@ namespace Dazed.Vitals.Rendering
         }
 
         public int GetAttribLocation(string v) => _materialShader.GetAttribLocation(v);
-
-        //For variants
-        private Material(Material mat)
-        {
-            _parent = mat ?? throw new ArgumentNullException(nameof(mat));
-            _materialShader = mat._materialShader;
-            for (int i = 0; i < mat._params.Count; i++)
-            {
-                _keyToIndex.Add(mat._params[i].Name, i);
-                _params.Add(new(mat._params[i].Name, mat._params[i].Value));
-            }
-        }
     }
 }

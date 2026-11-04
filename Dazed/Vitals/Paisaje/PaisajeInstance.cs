@@ -3,45 +3,50 @@ using Dazed.Vitals.Rendering;
 
 namespace Dazed.Vitals.Paisaje;
 
-public class PaisajeInstance : Renderable
+public class PaisajeInstance
 {
-    private readonly PaisajeGeometry[] _brushes;
-    private readonly List<PaisajeDynamic> _elements = [];
-    private readonly string[] _paisajeContext;
-    public PaisajeVariables Variables;
+    private readonly PaisajeObject[] m_objects;
+    private readonly uint[] m_dynamicObjsIndices;
+    public PaisajeVariables PaisajeVariables => m_vars;
+    private PaisajeVariables m_vars;
+
+    private readonly uint m_currentIndex;
     
     public PaisajeInstance(string assetAbsolutePath)
     {
         var sp = Cereal.LoadData<SerializedPaisaje>(assetAbsolutePath);
-        _brushes = new PaisajeGeometry[sp.Elements.Length];
-        _paisajeContext = sp.Context;
-        for (var i = 0; i < sp.Elements.Length; i++)
+        m_objects = new PaisajeObject[sp.Elements.Length];
+        var indicesToDynamics = new List<uint>();
+
+        m_vars = sp.PaisajeVariables;
+        for(uint i = 0; i < sp.Elements.Length; i++)
         {
-            switch (sp.Elements[i].PaisajeElementType)
-            {
-                case PaisajeElementType.Brush:
-                    _brushes[i] = new PaisajeGeometry(sp.Elements[i]); 
-                    break;
-                case PaisajeElementType.DynamicBrush:
-                    _elements.Add(InstantiateElement(sp.Elements[i]) ?? throw new NullReferenceException($"Element at index {i} failed on being instantiated"));
-                    break;
-                case PaisajeElementType.Entity:
-                    _elements.Add(InstantiateElement(sp.Elements[i]) ?? throw new NullReferenceException($"Element at index {i} failed on being instantiated"));
-                    break;
-            }
+            var elementType = GetElementType(sp.Elements[i]);
+            var obj = PaisajeObject.ConstructObject(typeof(PaisajeObject), m_currentIndex++, sp.Elements[i]);
+            m_objects[i] = obj;
+            if (elementType != typeof(Gemet))
+                indicesToDynamics.Add(i);
         }
+        m_dynamicObjsIndices = [.. indicesToDynamics];
     }
 
-    private static PaisajeDynamic? InstantiateElement(SerializedPaisajeElement spElement) => PaisajeDynamic.Create(Mundo.GetElementType(spElement.ElementType), spElement.ElementName, spElement.ElementData);
+    private static Type GetElementType(SerializedElementData element)
+    {
+        if (element.Dynamic == null)
+            return typeof(Gemet);
+        return Mundo.GetElementType(element.Dynamic.Value.TypeName);
+    }
+
+    public void Render(in RenderingData data)
+    {
+        //TODO: Implement sections and call those instead
+        foreach (var obj in m_objects)
+            obj.DrawUpdate(data);
+    }
 
     internal void Destroy()
     {
-        foreach (var element in _elements)
-            element.Destroy();
-    }
-
-    public override bool AllowRendering => true;
-    public override void Render(in RenderingData data)
-    {
+        foreach(var index in m_dynamicObjsIndices)
+           ((IDynamic)(m_objects[index])).Destroy();
     }
 }

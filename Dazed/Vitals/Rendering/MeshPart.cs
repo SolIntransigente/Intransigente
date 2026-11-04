@@ -202,19 +202,7 @@ namespace Dazed.Vitals.Rendering
             GL.DrawElements(PrimitiveType.Triangles, m_indicesCount, DrawElementsType.UnsignedInt, 0);
             GL.BindVertexArray(0);
         }
-
-        // private void SetRenderingValues(in RenderingData data, Matrix4x4 meshWorld)
-        // {
-        //     if (_partMaterial == null) return;
-        //     _partMaterial.SetMatrix4("view", data.ViewMatrix);
-        //     _partMaterial.SetMatrix4("projection", data.ProjectionMatrix);
-        //     _partMaterial.SetMatrix4("model", _meshMatrix * meshWorld);
-
-        //     //TODO: Replace this section with something fancier and general
-        //     _partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
-        //     _partMaterial.SetVector3("ambientColor", new Vector3(0.1f, 0.1f, 0));
-        // }
-
+        
         private void ReloadMaterialData()
         {
             if (m_partMaterial == null)

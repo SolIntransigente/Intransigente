@@ -9,28 +9,11 @@ public static class Mundo
     /// <summary>
     /// <p>Equivalent to a level in concept, holds the current "Environment data", this being geometry, entities and such</p>
     /// </summary>
-    public static PaisajeInstance? CurrentPaisaje
-    {
-        get;
-        private set
-        {
-            field = value;
-            ReloadPaisajeContext();
-        }
-    }
-    public static PaisajeVariables? Variables
-    {
-        get => CurrentPaisaje?.Variables;
-        private set
-        {
-            if (value == null)
-                return;
-            CurrentPaisaje?.Variables = value.Value;
-        }
-    }
+    public static PaisajeInstance? CurrentPaisaje => m_pInstance;
+    public static PaisajeVariables? Variables => CurrentPaisaje?.PaisajeVariables;
+    private static PaisajeInstance? m_pInstance;
 
     private static readonly Dictionary<string, Type> Elements = [];
-
 
     static Mundo()
     {
@@ -63,31 +46,14 @@ public static class Mundo
         }
         return elements;
     }
-    private static void ReloadPaisajeContext()
-    {
-    }
+    internal static void DrawPaisaje(in RenderingData data) => CurrentPaisaje?.Render(data);
 
-    internal static void DrawPaisaje(Frustum frustum)
-    {
-    }
-    
     internal static Type GetElementType(string identifier) => Elements[identifier];
-
-    internal static void RetrieveGeometryData(SerializedPaisajeElement sb, out Half[] vertices, out ushort[] indices)
-    {
-        PaisajeGeometryData data = PaisajeGeometryData.RetrieveGeometryData(sb.ElementData);
-        vertices = data.Vertices;
-        indices = data.Indices;
-    }
 
     internal static void LoadPaisaje(AssetPath paisajeFilePath)
     {
-        var data = Cereal.LoadData<SerializedPaisaje>(PathUtils.BaseDirectoryCombine(paisajeFilePath.AssetRelativePath));
-        //TODO: Process paisaje data and instantiate appropriate objects
-    }
-
-    internal static void CreateGeometry(Half[] vertices, ushort[] indices, out object[] elementData)
-    {
-        elementData = PaisajeGeometryData.OrganizeGeometryData(new PaisajeGeometryData(vertices, indices));
+        m_pInstance = new PaisajeInstance(paisajeFilePath.AssetRelativePath);
+        Artist.AmbientLightIntensity = Variables!.Value.AmbientLightIntensity;
+        Artist.AmbientLightColor = Variables.Value.AmbientLightColor;
     }
 }

@@ -95,9 +95,38 @@ namespace Dazed.Vitals.Rendering
         private const string SpotLightStructName = "spotLights";
         private const string DirectionalLightStructName = "dirLight";
 
+        internal static float AmbientLightIntensity
+        {
+            get => m_ambientLightIntensity;
+            set
+            {
+                m_ambientLightIntensity = value;
+                SetAmbientResult();
+            }
+        }
+        internal static Color AmbientLightColor
+        {
+            get => m_ambientLightColor;
+            set
+            {
+                m_ambientLightColor = value;
+                SetAmbientResult();
+            }
+        }
+
+        private static void SetAmbientResult()
+        {
+            AmbientResult = new(m_ambientLightColor.R * m_ambientLightIntensity, m_ambientLightColor.G * m_ambientLightIntensity, m_ambientLightColor.B * m_ambientLightIntensity);
+            AmbientResult = Vector3.Normalize(AmbientResult);
+        }
+
+        internal static Vector3 AmbientResult; 
+
         internal static bool Initialized { get; private set; }
 
         private static int _currentMeshBinding;
+        private static float m_ambientLightIntensity = 1f;
+        private static Color m_ambientLightColor = Color.White;
 
         public static void ReloadScreenInfo()
         {
@@ -433,10 +462,10 @@ namespace Dazed.Vitals.Rendering
             partMaterial.SetMatrix4("view", data.ViewMatrix);
             partMaterial.SetMatrix4("projection", data.ProjectionMatrix);
             partMaterial.SetMatrix4("model", meshMatrix * meshWorld);
-
-            //TODO: Replace this section with something fancier and general
+            //? Could assign object color somewhere else
             partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
-            partMaterial.SetVector3("ambientColor", new Vector3(0.1f, 0.1f, 0));
+
+            partMaterial.SetVector3("ambientColor", new Vector3(AmbientLightColor.R * , 0.1f, 0));
         }
 
         internal static void SetCommonValues(Material partMaterial, in RenderingData data)
@@ -445,10 +474,10 @@ namespace Dazed.Vitals.Rendering
             partMaterial.SetMatrix4("view", data.ViewMatrix);
             partMaterial.SetMatrix4("projection", data.ProjectionMatrix);
             partMaterial.SetMatrix4("model", Matrix4x4.Identity);
-
-            //TODO: Replace this section with something fancier and general
+            //? Should object color be set somewhere else??
             partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
-            partMaterial.SetVector3("ambientColor", new Vector3(0.1f, 0.1f, 0));
+
+            partMaterial.SetVector3("ambientColor", AmbientResult);
         }
 
         private static void RenderPass(RenderingPass pass, in RenderingData? data)

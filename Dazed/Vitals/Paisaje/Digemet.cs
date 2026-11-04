@@ -11,9 +11,11 @@ public abstract class Digemet : PaisajeObject, IDynamic, IGeometry
     private Transform m_transform = null!;
 
     public GemetRenderer Renderer => m_renderer;
-    private GemetRenderer m_renderer = null!;
 
-    public override bool IsDynamic => true;
+    public bool Exists => m_exists;
+    private bool m_exists;
+
+    private GemetRenderer m_renderer = null!;
 
     public void AssignData(string pathToMaterialData, Half[] verts, Half[] texCoords, ushort[] indices)
     {
@@ -38,10 +40,14 @@ public abstract class Digemet : PaisajeObject, IDynamic, IGeometry
 
         m_renderer = new(pathToMaterialData, newVerts, texCoords, indices);
         m_transform = new () {Position = center};
+        m_exists = true;
     }
 
     public void Destroy()
     {
+        if (!m_exists)
+            return;
+        m_exists = false;
         m_renderer.Dispose();
     }
 }

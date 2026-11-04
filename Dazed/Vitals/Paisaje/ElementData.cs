@@ -3,10 +3,8 @@
 namespace Dazed.Vitals.Paisaje;
 
 [method: JsonConstructor]
-public readonly struct ElementData(PaisajeFieldData[] fields, object[] data)
+public readonly struct SerializedElementData(SerializedDynamic? dynamic, SerializedGeometry? geometry)
 {
-	[JsonProperty("f")]
-	public readonly PaisajeFieldData[] Fields = fields;
-	[JsonProperty("d")]
-	public readonly object[] Data = data;
+	[JsonProperty("g")] public readonly SerializedDynamic? Dynamic = dynamic;
+	[JsonProperty("d")] public readonly SerializedGeometry? Geometry = geometry;
 }

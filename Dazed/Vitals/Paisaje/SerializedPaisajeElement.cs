@@ -6,7 +6,7 @@ namespace Dazed.Vitals.Paisaje;
 public readonly struct SerializedPaisajeElement(
     string elementName,
     string elementType,
-    ElementData elementData,
+    SerializedElementData elementData,
     PaisajeElementType paisajeElementType)
 {
     [JsonProperty("n")]
@@ -14,7 +14,7 @@ public readonly struct SerializedPaisajeElement(
     [JsonProperty("t")]
     public readonly string ElementType = elementType;
     [JsonProperty("d")]
-    public readonly ElementData ElementData = elementData;
+    public readonly SerializedElementData ElementData = elementData;
     [JsonProperty("c")]
     public readonly PaisajeElementType PaisajeElementType = paisajeElementType;
 }
