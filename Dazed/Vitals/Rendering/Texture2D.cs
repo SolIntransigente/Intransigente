@@ -56,7 +56,7 @@ namespace Dazed.Vitals.Rendering
         {
             _dataType = dataType;
             _isReadOnly = isReadOnly;
-            using (var stream = File.OpenRead(path))
+            using (var stream = File.OpenRead(PathUtils.BaseDirectoryCombine(path)))
             {
                 var img = ImageResult.FromStream(stream, GetColorComponent());
                 PushData(img);

@@ -21,8 +21,8 @@ namespace DazedGUITools.Windows.ExposedFieldManagement
 
         public ExposedFieldsManager() : base("Expose fields manager", true)
         {
-            PathUtils.OverwritenBasePath = MainWindow.ProjectFolder;
-            PathUtils.IsBasePathOverwriten = true;
+            PathUtils.OverwrittenBasePath = MainWindow.ProjectFolder;
+            PathUtils.IsBasePathOverwritten = true;
             FindFields();
         }
 
@@ -116,7 +116,7 @@ namespace DazedGUITools.Windows.ExposedFieldManagement
             for (int i = 0; i < classAndField.Length; i++)
                 classAndField[i] = _fields[i].FormattedName;
             ExposedDataArrays data = new(classAndField, _values.ToArray());
-            Cereal.SaveData(data, Path.Combine(MainWindow.ProjectFolder, CommonPaths.ExposedDataFile));
+            Cereal.SaveData(data, MainWindow.ProjectFolder, CommonPaths.ExposedDataFile);
             IsDirty = false;
         }
 

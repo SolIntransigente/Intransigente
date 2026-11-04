@@ -5,8 +5,8 @@ namespace Dazed.Vitals.Audio
     {
         public SoundPlayer? Player => _playerExists && !_isDisposed ? _player : null;
         public AudioClip Clip => _clip;
-        private SoundPlayer _player;
-        private AudioClip _clip;
+        private SoundPlayer _player = null!;
+        private AudioClip _clip = null!;
         private bool _playerExists, _isDisposed;
 
         public float Volume
@@ -35,8 +35,7 @@ namespace Dazed.Vitals.Audio
 
         public SoundEmitter(string pathToClip, SoundEmissionSettings? settings = null)
         {
-            if (settings == null)
-                settings = SoundEmissionSettings.Default;
+            settings ??= SoundEmissionSettings.Default;
             Settings = settings.Value;
             _clip = new AudioClip(pathToClip);
             SetNewPlayer(_clip);

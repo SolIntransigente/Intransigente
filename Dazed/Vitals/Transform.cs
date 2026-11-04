@@ -71,8 +71,6 @@ namespace Dazed.Vitals
                 UpdateRotation();
             }
         }
-
-
         public Vector3 Scale
         {
             get => _scale;

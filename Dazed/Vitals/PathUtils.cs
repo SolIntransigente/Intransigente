@@ -8,14 +8,14 @@ namespace Dazed.Vitals
 {
     public static class PathUtils
     {
-        public static bool IsBasePathOverwriten
+        public static bool IsBasePathOverwritten
         {
             get => _overwriteBase && !DazedInstance.IsContextRuntime;
             set => _overwriteBase = value;
         }
         private static bool _overwriteBase;
-        public static string OverwritenBasePath { get; set; }
-        public static string BaseDirectory => IsBasePathOverwriten ? OverwritenBasePath : AppDomain.CurrentDomain.BaseDirectory;
+        public static string OverwrittenBasePath { get; set; }
+        public static string BaseDirectory => IsBasePathOverwritten ? OverwrittenBasePath : AppDomain.CurrentDomain.BaseDirectory;
         public static string ShadersDirectory => Path.Combine(BaseDirectory, CommonPaths.ShadersFolderName);
 
         public static string GetExtension(this string value)
@@ -117,7 +117,7 @@ namespace Dazed.Vitals
             if (path.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
                 return false;
 
-            if (Uri.TryCreate(path, UriKind.Absolute, out Uri uri) && uri != null && uri.IsUnc && uri.Host != string.Empty)
+            if (Uri.TryCreate(path, UriKind.Absolute, out Uri? uri) && uri != null && uri.IsUnc && uri.Host != string.Empty)
                 path = uri.AbsolutePath;
 
             var clearedPath = path;

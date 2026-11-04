@@ -81,7 +81,7 @@ namespace Intransigente
         {
             if (DazedInstance.LastUpdateCall.ElapsedMilliseconds >= SecondsForProgramAnswer * 1000)
             {
-                Scriptorium.Warn($"It's been {SecondsForProgramAnswer}s since last update from the game, and so it was terminated.");
+                Scriptorium.Warn($"It's been at least {SecondsForProgramAnswer}s since last update from the game, and so it was terminated.");
                 Environment.Exit(-1);
             }
             else

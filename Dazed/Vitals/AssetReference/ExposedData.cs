@@ -16,6 +16,7 @@ namespace Dazed.Vitals.AssetReference
 
         public static bool TryRetrieve(string formalFieldName, out object obj)
         {
+            obj = new();
             try
             {
                 obj = _data[formalFieldName]!;
@@ -23,7 +24,6 @@ namespace Dazed.Vitals.AssetReference
             }
             catch(KeyNotFoundException)
             {
-                obj = null;
                 return false;
             }
         }

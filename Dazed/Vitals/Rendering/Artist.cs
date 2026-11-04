@@ -1,9 +1,7 @@
-﻿using Dazed.Vitals.Content;
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using Dazed.Vitals.Rendering.RenderDebug;
 using Dazed.Vitals.AssetReference;
-using System.Numerics;
 
 namespace Dazed.Vitals.Rendering
 {
@@ -17,7 +15,7 @@ namespace Dazed.Vitals.Rendering
 
         [ExposedField("missing texture path")]
         private static AssetPath _missingTexturePath;
-        public static Texture2D MissingTexture { get; }
+        public static Texture2D MissingTexture { get; private set; }
 
         public static int Width { get => _width; internal set { _width = value; RefreshRenderingInfo(); } }
         private static int _width;
@@ -90,11 +88,13 @@ namespace Dazed.Vitals.Rendering
 
         private static readonly LightParameters[] PrefabPointLightParameters = new LightParameters[MaximumRenderedLights];
         private static readonly LightParameters[] PrefabSpotLightParameters = new LightParameters[MaximumRenderedLights];
-        private static readonly LightParameters PrefabDirectionalLightParameters;
+        private static LightParameters PrefabDirectionalLightParameters;
 
         private const string PointLightStructName = "pointLights";
         private const string SpotLightStructName = "spotLights";
         private const string DirectionalLightStructName = "dirLight";
+
+        internal static bool Initialized { get; private set; }
 
         private static int _currentMeshBinding;
 
@@ -123,6 +123,8 @@ namespace Dazed.Vitals.Rendering
             _normalizedHeight = 1 / (float)_height;
             _normalizedWidth = 1 / (float)_width;
 
+            if (!DazedInstance.IsContextRuntime)
+                return;
             ReloadScreenInfo();
         }
 
@@ -135,7 +137,7 @@ namespace Dazed.Vitals.Rendering
             RefreshRenderingInfo();
         }
 
-        static Artist()
+        internal static void Initialize()
         {
             ExposedData.RetrieveAll(typeof(Artist), null);
             MissingTexture = Texture2D.GetTextureInstance(_missingTexturePath!.AssetRelativePath);
@@ -161,6 +163,10 @@ namespace Dazed.Vitals.Rendering
             string[] dirParams = [.. Light.BaseParameters, .. DirectionalLight.Parameters];
             var dirLightParams = GetParams(dirParams, dirLightBase);
             PrefabDirectionalLightParameters = new(dirLightParams, dirParams);
+
+            SetUpFrameBuffer();
+            _fullscreenRender = new FullscreenRenderer();
+            Initialized = true;
         }
 
         private static string[] GetParams(string[] allParams, string light)
@@ -172,11 +178,10 @@ namespace Dazed.Vitals.Rendering
             return parameters;
         }
 
-        internal static void Initialize()
-        {
-            SetUpFrameBuffer();
-            _fullscreenRender = new FullscreenRenderer();
-        }
+        //internal static void Initialize()
+        //{
+            
+        //}
 
         private static void SetUpFrameBuffer()
         {

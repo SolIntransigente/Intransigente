@@ -1,5 +1,6 @@
 ﻿using Dazed.Vitals;
 using Dazed.Vitals.Content;
+using Dazed.Vitals.Rendering;
 using DazedGUITools.Windows;
 using ImGuiNET;
 using Newtonsoft.Json;
@@ -32,6 +33,9 @@ namespace DazedGUITools
         internal static string ProjectResourcesFolder => Path.Combine(_projectFolder, CommonPaths.ResourcesFolderName);
         private static string _projectFolder = "null";
         private static StartUpWindow? _startUpWindow;
+
+        internal static int Width { get; private set; }
+        internal static int Height { get; private set; }
 
         static MainWindow()
         {
@@ -115,12 +119,14 @@ namespace DazedGUITools
 
             SetUpImguiStyle();
             _startUpWindow = new();
+            Artist.SetResolution(Width, Height);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-
+            Input.UpdateInputState(KeyboardState, MouseState);
+            Chronos.ExternalUpdate(Convert.ToSingle(e.Time));
             ImguiImplOpenGL3.NewFrame();
             ImguiImplOpenTK4.NewFrame();
             ImGui.NewFrame();
@@ -132,7 +138,7 @@ namespace DazedGUITools
             ImGui.Render();
             GL.Viewport(0, 0, FramebufferSize.X, FramebufferSize.Y);
             GL.ClearColor(new Color4(0, 32, 48, 255));
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             ImguiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
 
             if (ImGui.GetIO().ConfigFlags.HasFlag(ImGuiConfigFlags.ViewportsEnable))
@@ -143,6 +149,14 @@ namespace DazedGUITools
             }
 
             SwapBuffers();
+        }
+
+        protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
+        {
+            base.OnFramebufferResize(e);
+            Width = e.Width;
+            Height = e.Height;
+            Artist.SetResolution(Width, Height);
         }
 
         private static void RenderGUI()
@@ -183,6 +197,8 @@ namespace DazedGUITools
 
         private static void DisplayMainMenuBar()
         {
+            if (_startUpWindow != null)
+                return;
             if (ImGui.BeginMainMenuBar())
             {
                 if (ImGui.BeginMenu("Context Options"))

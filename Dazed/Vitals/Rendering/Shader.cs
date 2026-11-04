@@ -252,6 +252,8 @@ namespace Dazed.Vitals.Rendering
             throw new ArgumentException($"Value {value} is not assignable to type {type}, or does not have an assignment function");
         }
 
+        public string ShaderIdentifier => _pathFrag + _pathVert;
+
         ~Shader()
         {
             if (!_isDisposed)

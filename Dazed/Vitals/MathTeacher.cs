@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using OpenTK.Mathematics;
 using Quaternion = System.Numerics.Quaternion;
 using Vector3 = System.Numerics.Vector3;
@@ -83,6 +84,7 @@ public static class MathTeacher
         return value;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float ToRadians(float degrees) => degrees * DegreesToRadians;
 
     internal static Matrix4x4 ToNumerics(Assimp.Matrix4x4 t)

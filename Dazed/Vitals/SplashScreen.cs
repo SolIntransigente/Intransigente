@@ -15,7 +15,7 @@ namespace Dazed.Vitals
         public static void InitializeSplashScreen()
         {
             if (Ended) return;
-            _video = new(SplashScreenVideoName);
+            _video = new(PathUtils.BaseDirectoryCombine(SplashScreenVideoName));
             _video.VideoEndReached += EndSplashScreen;
         }
 

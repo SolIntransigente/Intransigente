@@ -45,15 +45,34 @@ namespace Dazed.Vitals.Rendering
         private Mesh(string path, Material material, MeshProperties properties)
         {
             _vertexCount = 0;
+            try
+            {
+                MeshPart[] allParts = LoadModelData(path, material, properties, out _vertexCount);
+                _meshParts = allParts;
+            }
+            catch (Exception ex)
+            {
+                //TODO: Instead load an error model
+                //! LoadModelData("the path to error model", <missing material>, <just use vertex data>);
+                Scriptorium.LogException(ex);
+                return;
+            }
+            // List<MeshPart> allParts = new();
+            
+        }
+
+        private MeshPart[] LoadModelData(string path, Material material, MeshProperties properties, out uint vertexCount)
+        {
             var meshData = Chest.AssimpContext.ImportFile(path, PostProcessSteps.Triangulate | PostProcessSteps.JoinIdenticalVertices);
-            List<MeshPart> allParts = new();
+            MeshPart[] allParts = new MeshPart[meshData.Meshes.Count];
+            vertexCount = 0;
             for (int i = 0; i < meshData.Meshes.Count; i++)
             {
                 List<float> allVerts = new();
                 List<float> allNormals = new();
                 List<float> allTextureCoords = new();
                 Assimp.Mesh mesh = meshData.Meshes[i];
-                _vertexCount += Convert.ToUInt32(mesh.VertexCount);
+                vertexCount += Convert.ToUInt32(mesh.VertexCount);
                 for (int v = 0; v < mesh.Vertices.Count; v++)
                 {
                     allVerts.Add(mesh.Vertices[v].X);
@@ -73,9 +92,10 @@ namespace Dazed.Vitals.Rendering
                     }
                 MeshPart part = new(allVerts.ToArray(), properties.UseNormals ? allNormals.ToArray() : null, properties.UseTextureCoords ? allTextureCoords.ToArray() : null, mesh.GetUnsignedIndices(), mesh.VertexCount,
                     MathTeacher.ToNumerics(meshData.RootNode.Children[i].Transform * meshData.RootNode.Transform), material);
-                allParts.Add(part);
+                allParts[i] = part;
             }
-            _meshParts = allParts.ToArray();
+
+            return allParts;
         }
     }
 }

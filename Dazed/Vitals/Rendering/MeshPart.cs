@@ -6,7 +6,7 @@ namespace Dazed.Vitals.Rendering
 {
     public class MeshPart : Renderable
     {
-        private readonly uint[] _indices;
+        private readonly ushort _indicesCount;
         private readonly ContainedMeshData _containedMeshData;
         public Material? PartMaterial
         {
@@ -36,15 +36,14 @@ namespace Dazed.Vitals.Rendering
             if (textureCoordinates != null)
                 _containedMeshData = (ContainedMeshData)(int)(ContainedMeshData.textureCoordinates + (int)_containedMeshData);
 
-            Half[] arrayBufferData = GetProperArray(ref vertPos, ref normals, ref textureCoordinates);
+            Half[] arrayBufferData = GetProperArray(ref vertPos, ref normals!, ref textureCoordinates!);
 
-            _indices = indices;
+            _indicesCount = (ushort) indices.Length;
 
             VertexCount = vertexCount;
             var vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject);
             GL.BufferStorage(BufferTarget.ArrayBuffer, arrayBufferData.Length * ByteSizeOfHalf, arrayBufferData, BufferStorageFlags.None);
-            //GL.BufferData(BufferTarget.ArrayBuffer, arrayBufferData.Length * ByteSizeOfHalf, arrayBufferData, BufferUsageHint.StaticDraw);
 
             var elementBufferObject = GL.GenBuffer();
             _vertexArrayObject = GL.GenVertexArray();
@@ -52,8 +51,7 @@ namespace Dazed.Vitals.Rendering
             PartMaterial = material;
 
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-            GL.BufferStorage(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferStorageFlags.None);
-            //GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
+            GL.BufferStorage(BufferTarget.ElementArrayBuffer, _indicesCount * sizeof(uint), indices, BufferStorageFlags.None);
 
             GL.BindVertexArray(0);
         }
@@ -200,7 +198,7 @@ namespace Dazed.Vitals.Rendering
             SetRenderingValues(in data, WorldMatrix);
             GL.BindVertexArray(_vertexArrayObject);
             _partMaterial.UseMaterial();
-            GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, _indicesCount, DrawElementsType.UnsignedInt, 0);
             GL.BindVertexArray(0);
         }
 
@@ -241,7 +239,7 @@ namespace Dazed.Vitals.Rendering
 
         private void AllAttributePointer()
         {
-            int positionLocation = _partMaterial.GetAttribLocation("aPos");
+            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 8 * ByteSizeOfHalf, 0);
 
@@ -256,7 +254,7 @@ namespace Dazed.Vitals.Rendering
 
         private void PositionAndTextureCoordinatesAttributePointer()
         {
-            int positionLocation = _partMaterial.GetAttribLocation("aPos");
+            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 5 * ByteSizeOfHalf, 0);
 
@@ -267,7 +265,7 @@ namespace Dazed.Vitals.Rendering
 
         private void PositionAndNormalAttributePointer()
         {
-            int positionLocation = _partMaterial.GetAttribLocation("aPos");
+            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 6 * ByteSizeOfHalf, 0);
 
@@ -278,7 +276,7 @@ namespace Dazed.Vitals.Rendering
 
         private void PositionAttributePointer()
         {
-            int positionLocation = _partMaterial.GetAttribLocation("aPos");
+            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 3 * ByteSizeOfHalf, 0);
         }

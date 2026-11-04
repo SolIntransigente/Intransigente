@@ -31,7 +31,10 @@ namespace DazedGUITools.Windows
                 return;
             }
             MainWindow.AddWindow(this);
+            OnInitialize();
         }
+
+        protected virtual void OnInitialize() { }
 
         private string GetUniqueName(string title, out bool successful, int triesCount = 0)
         {
@@ -49,7 +52,7 @@ namespace DazedGUITools.Windows
         /// <summary>
         /// Marks window for disposal after completing the current draw cycle.
         /// </summary>
-        protected void Close() => MarkedForDisposal = true;
+        internal void Close() => MarkedForDisposal = true;
 
         internal void CallDraw()
         {
