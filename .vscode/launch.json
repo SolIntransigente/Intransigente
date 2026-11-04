@@ -1,0 +1,46 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "GUI Tools",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/DazedGUITools/bin/Debug/net10.0-windows/DazedGUITools.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/DazedGUITools",
+            "console": "internalConsole",
+        },
+        {
+            "name": "Intransigente",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/Intransigente/bin/Debug/net10.0/Intransigente.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Intransigente",
+            "console": "internalConsole",
+        },
+
+        {
+            // Use IntelliSense to find out which attributes exist for C# debugging
+            // Use hover for the description of the existing attributes
+            // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/Intransigente/bin/Debug/net10.0/Intransigente.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Intransigente",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+}
