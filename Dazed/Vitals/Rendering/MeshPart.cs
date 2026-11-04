@@ -6,20 +6,20 @@ namespace Dazed.Vitals.Rendering
 {
     public class MeshPart : Renderable
     {
-        private readonly ushort _indicesCount;
-        private readonly ContainedMeshData _containedMeshData;
+        private readonly ushort m_indicesCount;
+        private readonly ContainedMeshData m_containedMeshData;
         public Material? PartMaterial
         {
-            get => _partMaterial;
+            get => m_partMaterial;
             set
             {
-                _partMaterial = value;
+                m_partMaterial = value;
                 ReloadMaterialData();
             }
         }
-        private Material? _partMaterial;
-        private readonly Matrix4x4 _meshMatrix;
-        internal Matrix4x4 WorldMatrix { get; set; }
+        private Material? m_partMaterial;
+        private Matrix4x4 m_meshMatrix;
+        internal Matrix4x4 m_worldMatrix;
 
         private readonly int _vertexArrayObject;
         private const int ByteSizeOfHalf = 2;
@@ -29,16 +29,16 @@ namespace Dazed.Vitals.Rendering
             if (vertPos == null || vertPos.Length == 0)
                 throw new ArgumentException("Vertex positions array can NOT be null nor empty.");
 
-            _meshMatrix = localMeshMatrix;
-            _containedMeshData = ContainedMeshData.position;
+            m_meshMatrix = localMeshMatrix;
+            m_containedMeshData = ContainedMeshData.position;
             if(normals != null)
-                _containedMeshData = (ContainedMeshData)(int)(ContainedMeshData.normals + (int)_containedMeshData);
+                m_containedMeshData = (ContainedMeshData)(int)(ContainedMeshData.normals + (int)m_containedMeshData);
             if (textureCoordinates != null)
-                _containedMeshData = (ContainedMeshData)(int)(ContainedMeshData.textureCoordinates + (int)_containedMeshData);
+                m_containedMeshData = (ContainedMeshData)(int)(ContainedMeshData.textureCoordinates + (int)m_containedMeshData);
 
             Half[] arrayBufferData = GetProperArray(ref vertPos, ref normals!, ref textureCoordinates!);
 
-            _indicesCount = (ushort) indices.Length;
+            m_indicesCount = (ushort) indices.Length;
 
             VertexCount = vertexCount;
             var vertexBufferObject = GL.GenBuffer();
@@ -51,14 +51,14 @@ namespace Dazed.Vitals.Rendering
             PartMaterial = material;
 
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-            GL.BufferStorage(BufferTarget.ElementArrayBuffer, _indicesCount * sizeof(uint), indices, BufferStorageFlags.None);
+            GL.BufferStorage(BufferTarget.ElementArrayBuffer, m_indicesCount * sizeof(uint), indices, BufferStorageFlags.None);
 
             GL.BindVertexArray(0);
         }
 
         private Half[] GetProperArray(ref float[] vertPos, ref float[] normals, ref float[] textureCoordinates)
         {
-            switch (_containedMeshData)
+            switch (m_containedMeshData)
             {
                 case ContainedMeshData.position:
                     Half[] val = new Half[vertPos.Length];
@@ -189,38 +189,38 @@ namespace Dazed.Vitals.Rendering
 
         public override void Render(in RenderingData data)
         {
-            if (_partMaterial == null)
+            if (m_partMaterial == null)
             {
                 if(DebugState.DebugLow)
                     Scriptorium.Warn("A mesh can not be drawn because it has no shader");
                 return;
             }
-            SetRenderingValues(in data, WorldMatrix);
+            // SetRenderingValues(in data, WorldMatrix);
+            Artist.SetCommonValues(m_partMaterial, in data, ref m_worldMatrix, ref m_meshMatrix);
             GL.BindVertexArray(_vertexArrayObject);
-            _partMaterial.UseMaterial();
-            GL.DrawElements(PrimitiveType.Triangles, _indicesCount, DrawElementsType.UnsignedInt, 0);
+            m_partMaterial.UseMaterial();
+            GL.DrawElements(PrimitiveType.Triangles, m_indicesCount, DrawElementsType.UnsignedInt, 0);
             GL.BindVertexArray(0);
         }
 
-        private void SetRenderingValues(in RenderingData data, Matrix4x4 meshWorld)
-        {
-            Artist.MissingTexture.Use();
-            if (_partMaterial == null) return;
-            _partMaterial.SetMatrix4("view", data.ViewMatrix);
-            _partMaterial.SetMatrix4("projection", data.ProjectionMatrix);
-            _partMaterial.SetMatrix4("model", _meshMatrix * meshWorld);
+        // private void SetRenderingValues(in RenderingData data, Matrix4x4 meshWorld)
+        // {
+        //     if (_partMaterial == null) return;
+        //     _partMaterial.SetMatrix4("view", data.ViewMatrix);
+        //     _partMaterial.SetMatrix4("projection", data.ProjectionMatrix);
+        //     _partMaterial.SetMatrix4("model", _meshMatrix * meshWorld);
 
-            //TODO: Replace this section with something fancier and general
-            _partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
-            _partMaterial.SetVector3("ambientColor", new Vector3(0.1f, 0.1f, 0));
-        }
+        //     //TODO: Replace this section with something fancier and general
+        //     _partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
+        //     _partMaterial.SetVector3("ambientColor", new Vector3(0.1f, 0.1f, 0));
+        // }
 
         private void ReloadMaterialData()
         {
-            if (_partMaterial == null)
+            if (m_partMaterial == null)
                 return;
             GL.BindVertexArray(_vertexArrayObject);
-            switch (_containedMeshData)
+            switch (m_containedMeshData)
             {
                 case ContainedMeshData.position:
                     PositionAttributePointer();
@@ -239,44 +239,44 @@ namespace Dazed.Vitals.Rendering
 
         private void AllAttributePointer()
         {
-            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
+            int positionLocation = m_partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 8 * ByteSizeOfHalf, 0);
 
-            int normalLocation = _partMaterial.GetAttribLocation("aNormal");
+            int normalLocation = m_partMaterial.GetAttribLocation("aNormal");
             GL.EnableVertexAttribArray(normalLocation);
             GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.HalfFloat, false, 8 * ByteSizeOfHalf, 3 * ByteSizeOfHalf);
 
-            int textCoord = _partMaterial.GetAttribLocation("aTexCoords");
+            int textCoord = m_partMaterial.GetAttribLocation("aTexCoords");
             GL.EnableVertexAttribArray(textCoord);
             GL.VertexAttribPointer(textCoord, 2, VertexAttribPointerType.HalfFloat, false, 8 * ByteSizeOfHalf, 6 * ByteSizeOfHalf);
         }
 
         private void PositionAndTextureCoordinatesAttributePointer()
         {
-            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
+            int positionLocation = m_partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 5 * ByteSizeOfHalf, 0);
 
-            int textCoord = _partMaterial.GetAttribLocation("aTexCoords");
+            int textCoord = m_partMaterial.GetAttribLocation("aTexCoords");
             GL.EnableVertexAttribArray(textCoord);
             GL.VertexAttribPointer(textCoord, 2, VertexAttribPointerType.HalfFloat, false, 5 * ByteSizeOfHalf, 3 * ByteSizeOfHalf);
         }
 
         private void PositionAndNormalAttributePointer()
         {
-            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
+            int positionLocation = m_partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 6 * ByteSizeOfHalf, 0);
 
-            int normalLocation = _partMaterial.GetAttribLocation("aNormal");
+            int normalLocation = m_partMaterial.GetAttribLocation("aNormal");
             GL.EnableVertexAttribArray(normalLocation);
             GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.HalfFloat, false, 6 * ByteSizeOfHalf, 3 * ByteSizeOfHalf);
         }
 
         private void PositionAttributePointer()
         {
-            int positionLocation = _partMaterial!.GetAttribLocation("aPos");
+            int positionLocation = m_partMaterial!.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.HalfFloat, false, 3 * ByteSizeOfHalf, 0);
         }

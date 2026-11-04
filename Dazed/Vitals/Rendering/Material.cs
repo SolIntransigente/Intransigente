@@ -10,19 +10,40 @@ namespace Dazed.Vitals.Rendering
         private readonly Dictionary<string, int> _keyToIndex = [];
         private readonly List<MaterialParameter> _params = [];
 
+        private Texture2D? m_mainTexture;
+
         internal event Action<int>? OnParameterChange;
 
-        private static readonly Dictionary<Shader, int> Indexes = [];
+        private static readonly Dictionary<string, int> Indexes = [];
         private static readonly List<Material> InstancedMaterials = [];
+
+        public static Material MissingMaterial{get; private set;} = null!;
+        internal static void CreateMissingMaterial(Shader shader, Texture2D texture)
+        {
+            MissingMaterial = new Material(shader);
+            MissingMaterial.SetMainTexture(texture);
+        }
 
         public static Material GetMaterialInstance(Shader matShader, bool litMaterial = false, bool forceNewInstance = false)
         {
             if (!forceNewInstance)
-                if (Indexes.TryGetValue(matShader, out var index))
+                if (Indexes.TryGetValue(matShader.ShaderIdentifier, out var index))
                     return InstancedMaterials[index];
             Material? m = null;
             m = new Material(matShader, litMaterial);
-            Indexes.Add(matShader, InstancedMaterials.Count);
+            Indexes.Add(matShader.ShaderIdentifier, InstancedMaterials.Count);
+            InstancedMaterials.Add(m);
+            return m;
+        }
+
+        public static Material GetMaterialInstance(SerializedMaterialData data, bool forceNewInstance = false)
+        {
+            if (!forceNewInstance)
+                if (Indexes.TryGetValue(data.ShaderIdentification, out var index))
+                    return InstancedMaterials[index];
+            Material? m = null;
+            m = new Material(Shader.GetShaderInstance(data.VertexShaderRelativePath, data.FragmentShaderRelativePath), data.IsLit);
+            Indexes.Add(data.ShaderIdentification, InstancedMaterials.Count);
             InstancedMaterials.Add(m);
             return m;
         }
@@ -45,9 +66,15 @@ namespace Dazed.Vitals.Rendering
             _params[index].SetValue(_parent!._params[index].Value);
         }
 
-        internal void UseMaterial()
+        public void UseMaterial()
         {
             UpdateShaderParameters(true);
+            m_mainTexture?.Use(OpenTK.Graphics.OpenGL.TextureUnit.Texture0);
+        }
+
+        private void SetMainTexture(Texture2D texture)
+        {
+            m_mainTexture = texture;
         }
 
         public void SetFloat(string name, float value)
@@ -182,7 +209,7 @@ namespace Dazed.Vitals.Rendering
             }
         }
 
-        internal int GetAttribLocation(string v) => _materialShader.GetAttribLocation(v);
+        public int GetAttribLocation(string v) => _materialShader.GetAttribLocation(v);
 
         //For variants
         private Material(Material mat)

@@ -8,8 +8,8 @@ namespace Dazed.Vitals.Paisaje;
 public sealed class PaisajeGeometry : Renderable
 {
     private readonly string _name;
-    public readonly float[] Vertices;
-    public readonly uint[] Indices;
+    public readonly Half[] Vertices;
+    public readonly ushort[] Indices;
 
     public Material? GeometryMaterial { get; set; }
 

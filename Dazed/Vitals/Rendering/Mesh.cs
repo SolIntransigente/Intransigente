@@ -37,7 +37,7 @@ namespace Dazed.Vitals.Rendering
         {
             foreach (MeshPart part in _meshParts)
             {
-                part.WorldMatrix = _world;
+                part.m_worldMatrix = _world;
                 part.Render(data);
             }
         }

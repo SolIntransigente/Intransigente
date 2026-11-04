@@ -1,16 +1,18 @@
 ﻿using System.Reflection;
-using Dazed.Vitals.Paisaje.Entities;
+using Dazed.Vitals.AssetReference;
 using Dazed.Vitals.Rendering;
-using System.Numerics;
 
 namespace Dazed.Vitals.Paisaje;
 
 public static class Mundo
 {
+    /// <summary>
+    /// <p>Equivalent to a level in concept, holds the current "Environment data", this being geometry, entities and such</p>
+    /// </summary>
     public static PaisajeInstance? CurrentPaisaje
     {
         get;
-        set
+        private set
         {
             field = value;
             ReloadPaisajeContext();
@@ -19,7 +21,7 @@ public static class Mundo
     public static PaisajeVariables? Variables
     {
         get => CurrentPaisaje?.Variables;
-        set
+        private set
         {
             if (value == null)
                 return;
@@ -27,11 +29,12 @@ public static class Mundo
         }
     }
 
-    private static readonly Dictionary<string, Type> Elements = new();
+    private static readonly Dictionary<string, Type> Elements = [];
 
 
     static Mundo()
     {
+        //Get all paisaje elements, then store them for later.
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         List<Type> types = [];
         List<PaisajeElementAttribute> attributes = [];
@@ -46,16 +49,16 @@ public static class Mundo
             Elements.Add(attributes[i].ElementIdentifier, types[i]);
     }
 
-    private static List<Type> GetPaisajeElements(Assembly assembly, out List<PaisajeElementAttribute> atts)
+    private static List<Type> GetPaisajeElements(Assembly assembly, out List<PaisajeElementAttribute> attributes)
     {
-        atts = [];
+        attributes = [];
         List<Type> elements = [];
         foreach (var type in assembly.GetTypes())
         {
             object? att = type.GetCustomAttribute<PaisajeElementAttribute>(true);
             if (att == null) continue;
             
-            atts.Add((PaisajeElementAttribute)att);
+            attributes.Add((PaisajeElementAttribute)att);
             elements.Add(type);
         }
         return elements;
@@ -68,16 +71,22 @@ public static class Mundo
     {
     }
     
-    public static Type GetElementType(string identifier) => Elements[identifier];
+    internal static Type GetElementType(string identifier) => Elements[identifier];
 
-    public static void RetrieveGeometryData(SerializedPaisajeElement sb, out float[] vertices, out uint[] indices)
+    internal static void RetrieveGeometryData(SerializedPaisajeElement sb, out Half[] vertices, out ushort[] indices)
     {
         PaisajeGeometryData data = PaisajeGeometryData.RetrieveGeometryData(sb.ElementData);
         vertices = data.Vertices;
         indices = data.Indices;
     }
 
-    public static void CreateGeometry(float[] vertices, uint[] indices, out object[] elementData)
+    internal static void LoadPaisaje(AssetPath paisajeFilePath)
+    {
+        var data = Cereal.LoadData<SerializedPaisaje>(PathUtils.BaseDirectoryCombine(paisajeFilePath.AssetRelativePath));
+        //TODO: Process paisaje data and instantiate appropriate objects
+    }
+
+    internal static void CreateGeometry(Half[] vertices, ushort[] indices, out object[] elementData)
     {
         elementData = PaisajeGeometryData.OrganizeGeometryData(new PaisajeGeometryData(vertices, indices));
     }

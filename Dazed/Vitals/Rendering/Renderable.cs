@@ -17,6 +17,7 @@ namespace Dazed.Vitals.Rendering
         {
             if (CustomAssignment) return;
             Artist.DisposeRendered(_bindPos);
+            
             GC.SuppressFinalize(this);
         }
 

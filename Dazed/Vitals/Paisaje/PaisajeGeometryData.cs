@@ -1,9 +1,9 @@
 ﻿namespace Dazed.Vitals.Paisaje;
 
-public readonly struct PaisajeGeometryData(float[] vertices, uint[] indices)
+public readonly struct PaisajeGeometryData(Half[] vertices, ushort[] indices)
 {
-    public readonly float[] Vertices = vertices;
-    public readonly uint[] Indices = indices;
+    public readonly Half[] Vertices = vertices;
+    public readonly ushort[] Indices = indices;
 
     internal static object[] OrganizeGeometryData(PaisajeGeometryData d)
     {
@@ -18,11 +18,11 @@ public readonly struct PaisajeGeometryData(float[] vertices, uint[] indices)
     internal static PaisajeGeometryData RetrieveGeometryData(ElementData Data)
     {
         var all = Data.Data;
-        List<float> vertices = [.. all.TakeWhile(v => v is not uint).Cast<float>()];
+        List<Half> vertices = [.. all.TakeWhile(v => v is not ushort).Cast<Half>()];
         
-        var indices = new uint[all.Length - vertices.Count];
+        var indices = new ushort[all.Length - vertices.Count];
         for (var i = 0; i < indices.Length; i++)
-            indices[i] = (uint)all[i + vertices.Count - 1];
+            indices[i] = (ushort)all[i + vertices.Count - 1];
         return new PaisajeGeometryData(vertices.ToArray(), indices);
     }
 }

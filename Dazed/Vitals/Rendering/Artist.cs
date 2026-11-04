@@ -2,6 +2,7 @@
 using OpenTK.Windowing.Common;
 using Dazed.Vitals.Rendering.RenderDebug;
 using Dazed.Vitals.AssetReference;
+using System.Numerics;
 
 namespace Dazed.Vitals.Rendering
 {
@@ -424,6 +425,30 @@ namespace Dazed.Vitals.Rendering
                         break;
                 }
             }
+        }
+
+        internal static void SetCommonValues(Material partMaterial, in RenderingData data, ref Matrix4x4 meshWorld, ref Matrix4x4 meshMatrix)
+        {
+            if (partMaterial == null) return;
+            partMaterial.SetMatrix4("view", data.ViewMatrix);
+            partMaterial.SetMatrix4("projection", data.ProjectionMatrix);
+            partMaterial.SetMatrix4("model", meshMatrix * meshWorld);
+
+            //TODO: Replace this section with something fancier and general
+            partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
+            partMaterial.SetVector3("ambientColor", new Vector3(0.1f, 0.1f, 0));
+        }
+
+        internal static void SetCommonValues(Material partMaterial, in RenderingData data)
+        {
+            if (partMaterial == null) return;
+            partMaterial.SetMatrix4("view", data.ViewMatrix);
+            partMaterial.SetMatrix4("projection", data.ProjectionMatrix);
+            partMaterial.SetMatrix4("model", Matrix4x4.Identity);
+
+            //TODO: Replace this section with something fancier and general
+            partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
+            partMaterial.SetVector3("ambientColor", new Vector3(0.1f, 0.1f, 0));
         }
 
         private static void RenderPass(RenderingPass pass, in RenderingData? data)

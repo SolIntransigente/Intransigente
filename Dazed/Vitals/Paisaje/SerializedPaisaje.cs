@@ -2,14 +2,9 @@
 
 namespace Dazed.Vitals.Paisaje;
 
-public readonly struct SerializedPaisaje
+public readonly struct SerializedPaisaje(SerializedPaisajeElement[] elements, string[] context)
 {
-    [JsonProperty("b")] public readonly SerializedPaisajeElement[] Elements;
-    [JsonProperty("c")] public readonly string[] Context;
-    
-    public SerializedPaisaje(SerializedPaisajeElement[] elements, string[] context)
-    {
-        Elements = elements;
-        Context = context;
-    }
+    // ? May be better to change this struct so it contains dynamic objects and static geometry separated
+    [JsonProperty("b")] public readonly SerializedPaisajeElement[] Elements = elements;
+    [JsonProperty("c")] public readonly string[] Context = context;
 }
