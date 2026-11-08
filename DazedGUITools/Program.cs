@@ -7,7 +7,7 @@ namespace DazedGUITools
         [STAThread]
         static void Main(string[] args)
         {
-            //TODO: Check for -mapbuild argument, as to allow the editor to be used for map compilation, transforming the .map file into a JSON file with all the required, precomupted data.
+            Intransigente.AssemblyRelationCreate.CreateRelation();
             var window = new MainWindow();
             window.Run();
             ImguiImplOpenGL3.Shutdown();

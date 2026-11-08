@@ -6,11 +6,13 @@ namespace Dazed.Vitals.Rendering
 {
     public static class QuadData
     {
-        public static readonly Shader QuadShader;
+        public static Shader? QuadShader;
 
-        static QuadData()
+        internal static void SetQuadShaderIfNull()
         {
-            QuadShader = Shader.GetShaderInstance("quadShader.vert", "screenShader.frag");
+            if (QuadShader != null)
+                return;
+            QuadShader = Shader.GetNewShaderInstance("quadShader.vert", "screenShader.frag");
         }
         public static readonly float[] VertexPosAndTexturePosData =
         {

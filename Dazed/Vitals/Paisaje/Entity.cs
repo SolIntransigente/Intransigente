@@ -11,7 +11,7 @@ public abstract class Entity : PaisajeObject, IDynamic, IEntity
     public abstract AssetPath PathToMaterialData {get;}
     public string Identifier => $"{ObjectSharedName}: {ObjectUniqueIdentifier}";
     //TODO: implement this
-    public abstract string ObjectSharedName {get; protected set;}
+    public abstract string ObjectSharedName {get;}
 
     /// <summary>
     /// Equivalent to <seealso cref="Exists"/>, marks that it's not disposed and if it has been initialized

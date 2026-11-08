@@ -96,7 +96,7 @@ namespace Dazed.Vitals.Rendering.GUI
 
         static GuiText()
         {
-            TextShader = Shader.GetShaderInstance("text");
+            TextShader = Shader.GetNewShaderInstance("text");
 
             var vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);

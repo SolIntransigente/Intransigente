@@ -20,7 +20,7 @@ namespace Dazed.Vitals.Rendering
 
         private readonly Dictionary<Type, Action<string, object>> ValueAssignments = [];
 
-        public static Shader GetShaderInstance(string path, bool pathIsAbsolute = false)
+        public static Shader GetNewShaderInstance(string path, bool pathIsAbsolute = false)
         {
             string vertexPath = path + CommonPaths.VertexShaderFileExtension;
             string fragmentPath = path + CommonPaths.FragmentShaderFileExtension;
@@ -32,7 +32,7 @@ namespace Dazed.Vitals.Rendering
             return GetShaderInstanceCommon(vertexPath, fragmentPath);
         }
 
-        public static Shader GetShaderInstance(string vertPath, string fragPath, bool pathIsAbsolute = false)
+        public static Shader GetNewShaderInstance(string vertPath, string fragPath, bool pathIsAbsolute = false)
         {
             if (!pathIsAbsolute)
             {

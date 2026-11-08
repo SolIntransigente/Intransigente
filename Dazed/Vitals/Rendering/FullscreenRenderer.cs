@@ -11,7 +11,7 @@ namespace Dazed.Vitals.Rendering
 
         static FullscreenRenderer()
         {
-            DefaultShader = Shader.GetShaderInstance("screenShader");
+            DefaultShader = Shader.GetNewShaderInstance("screenShader");
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 

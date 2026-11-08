@@ -10,7 +10,7 @@ public abstract class TemporalRenderable : Renderable
 
 	static TemporalRenderable()
 	{
-		DebugShader = Shader.GetShaderInstance("simple.vert", "debug.frag");
+		DebugShader = Shader.GetNewShaderInstance("simple.vert", "debug.frag");
 	}
 
 	public TemporalRenderable()

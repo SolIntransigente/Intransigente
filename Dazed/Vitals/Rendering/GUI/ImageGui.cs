@@ -43,7 +43,7 @@ namespace Dazed.Vitals.Rendering.GUI
 
         static ImageGui()
         {
-            DefaultShader = Shader.GetShaderInstance("guiImage");
+            DefaultShader = Shader.GetNewShaderInstance("guiImage");
 
             int vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);

@@ -465,7 +465,7 @@ namespace Dazed.Vitals.Rendering
             //? Could assign object color somewhere else
             partMaterial.SetVector3("objectColor", new Vector3(1f, 1f, 1f));
 
-            partMaterial.SetVector3("ambientColor", new Vector3(AmbientLightColor.R * , 0.1f, 0));
+            partMaterial.SetVector3("ambientColor", AmbientResult);
         }
 
         internal static void SetCommonValues(Material partMaterial, in RenderingData data)

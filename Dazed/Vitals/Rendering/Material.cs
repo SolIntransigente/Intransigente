@@ -40,7 +40,7 @@ namespace Dazed.Vitals.Rendering
                 if (Indexes.TryGetValue(data.ShaderIdentification, out var index))
                     return InstancedMaterials[index];
             Material? m = null;
-            m = new Material(Shader.GetShaderInstance(data.VertexShaderRelativePath, data.FragmentShaderRelativePath), data.IsLit);
+            m = new Material(Shader.GetNewShaderInstance(data.VertexShaderRelativePath, data.FragmentShaderRelativePath), data.IsLit);
             Indexes.Add(data.ShaderIdentification, InstancedMaterials.Count);
             InstancedMaterials.Add(m);
             return m;

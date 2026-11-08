@@ -40,6 +40,7 @@ namespace Dazed.Vitals.VideoPlay
             if (!_capture.IsOpened)
                 throw new Exception("An error was found while assigning the video capture");
             _path = path;
+            QuadData.SetQuadShaderIfNull();
             _videoPlayerRenderer = new(QuadData.QuadShader);
             _elapsedSinceUpdate = new();
 
