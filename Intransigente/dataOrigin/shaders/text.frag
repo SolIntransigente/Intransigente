@@ -1,4 +1,5 @@
 #version 330 core
+//invalid shader
 out vec4 FragColor;
 
 uniform vec4 textColorMultiplier;

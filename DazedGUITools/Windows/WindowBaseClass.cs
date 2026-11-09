@@ -2,6 +2,7 @@
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace DazedGUITools.Windows
@@ -63,5 +64,27 @@ namespace DazedGUITools.Windows
             ImGui.End();
         }
         protected abstract void Draw();
+
+        protected bool InputVector3(string text, ref Vector3 value)
+        {
+            var vec3 = value;
+            ImGui.Text(text);
+            if (ImGui.InputFloat($"##{text}x", ref vec3.X))
+            {
+                value.X = vec3.X;
+                return true;
+            }
+            if(ImGui.InputFloat($"##{text}y", ref vec3.Y))
+            {
+                value.Y = vec3.Y;
+                return true;
+            }
+            if(ImGui.InputFloat($"##{text}z", ref vec3.Z))
+            {
+                value.Z = vec3.Z;
+                return true;
+            }
+            return false;
+        }
     }
 }

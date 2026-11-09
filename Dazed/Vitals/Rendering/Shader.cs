@@ -1,10 +1,9 @@
 ﻿using System.Numerics;
+using Dazed.Vitals.AssetReference;
 using Dazed.Vitals.FileHandling;
 using OpenTK.Graphics.OpenGL;
-using OpenTK.Mathematics;
-using Vector2 = OpenTK.Mathematics.Vector2;
-using Vector3 = OpenTK.Mathematics.Vector3;
-using Vector4 = OpenTK.Mathematics.Vector4;
+using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
 
 namespace Dazed.Vitals.Rendering
 {
@@ -19,6 +18,18 @@ namespace Dazed.Vitals.Rendering
         private readonly Dictionary<string, int> _uniformLocations = new();
 
         private readonly Dictionary<Type, Action<string, object>> ValueAssignments = [];
+        private static readonly Dictionary<string, Type> AvailableTypes;
+
+        static Shader()
+        {
+            AvailableTypes = [];
+            AvailableTypes.Add("vec4", typeof(Vector4));
+            AvailableTypes.Add("vec3", typeof(Vector3));
+            AvailableTypes.Add("vec2", typeof(Vector2));
+            AvailableTypes.Add("float", typeof(float));
+            AvailableTypes.Add("bool", typeof(bool));
+            AvailableTypes.Add("sampler2D", typeof(AssetPath));
+        }
 
         public static Shader GetNewShaderInstance(string path, bool pathIsAbsolute = false)
         {
@@ -66,8 +77,8 @@ namespace Dazed.Vitals.Rendering
             ValueAssignments.Add(typeof(Vector2), SetVector2);
             ValueAssignments.Add(typeof(Vector3), SetVector3);
             ValueAssignments.Add(typeof(Vector4), SetVector4);
-            ValueAssignments.Add(typeof(Color4), SetColor4);
-            ValueAssignments.Add(typeof(Matrix4), SetMatrix4);
+            ValueAssignments.Add(typeof(OpenTK.Mathematics.Color4), SetColor4);
+            ValueAssignments.Add(typeof(OpenTK.Mathematics.Matrix4), SetMatrix4);
             ValueAssignments.Add(typeof(bool), SetBool);
         }
 
@@ -200,34 +211,34 @@ namespace Dazed.Vitals.Rendering
             Use();
             if (data.GetType() == typeof(Matrix4x4))
                 data = MathTeacher.ToOpenTkMatrix4((Matrix4x4)data);
-            var matrix4 = (Matrix4)data;
+            var matrix4 = (OpenTK.Mathematics.Matrix4)data;
             GL.UniformMatrix4(_uniformLocations[name], true, ref matrix4);
         }
 
         internal void SetVector3(string name, object vector3)
         {
             Use();
-            GL.Uniform3(_uniformLocations[name], (Vector3)vector3);
+            GL.Uniform3(_uniformLocations[name], (OpenTK.Mathematics.Vector3)vector3);
         }
 
         internal void SetVector2(string name, object vector2)
         {
             Use();
-            GL.Uniform2(_uniformLocations[name], (Vector2)vector2);
+            GL.Uniform2(_uniformLocations[name], (OpenTK.Mathematics.Vector2)vector2);
         }
 
         internal void SetVector4(string name, object vector4)
         {
             Use();
-            GL.Uniform4(_uniformLocations[name], (Vector4)vector4);
+            GL.Uniform4(_uniformLocations[name], (OpenTK.Mathematics.Vector4)vector4);
         }
 
         internal void SetColor4(string name, object color4)
         {
             Use();
             if(color4.GetType() == typeof(Color))
-                color4 = (Color4)((Color)color4);
-            GL.Uniform4(_uniformLocations[name], (Color4)color4);
+                color4 = (OpenTK.Mathematics.Color4)((Color)color4);
+            GL.Uniform4(_uniformLocations[name], (OpenTK.Mathematics.Color4)color4);
         }
 
         internal void SetBool(string name, object value)
@@ -250,6 +261,79 @@ namespace Dazed.Vitals.Rendering
                 return;
             }
             throw new ArgumentException($"Value {value} is not assignable to type {type}, or does not have an assignment function");
+        }
+
+        private const string UniformLabel = "uniform";
+        public static string? GetProperties(string shadersDirectory, string fragName, string vertName, out SerializedMaterialProperty[] properties)
+        {
+            string fragPath = Path.Combine(shadersDirectory, $"{fragName}");
+            string vertPath = Path.Combine(shadersDirectory, $"{vertName}");
+
+            try
+            {
+                var fragLines = File.ReadAllLines(fragPath);
+                var vertLines = File.ReadAllLines(vertPath);
+                var fragData = GetData(fragLines, out bool successful);
+                if (!successful)
+                    throw new Exception($"{fragPath} is set as an invalid shader, meaning it should not be used directly by materials.");
+                var vertData = GetData(vertLines, out successful);
+                if (!successful)
+                    throw new Exception($"{fragPath} is set as an invalid shader, meaning it should not be used directly by materials.");
+                properties = [.. fragData, ..vertData];
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Scriptorium.LogException(ex);
+                properties = null;
+                return ex.Message;
+            }
+
+        }
+
+        private const string ExposedPropertyText = "exposed";
+        private static SerializedMaterialProperty[] GetData(string[] lines, out bool successful)
+        {
+            successful = false;
+            List<SerializedMaterialProperty> data = [];
+            for (uint i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].ToLower().Contains("invalid shader"))
+                    return null;
+                if (!lines[i].Contains(UniformLabel))
+                    continue;
+                if (!lines[i].Contains(ExposedPropertyText, StringComparison.InvariantCulture))
+                    continue;
+                string trimmedLine = lines[i].Remove(0, UniformLabel.Length).Trim();
+                string literalType = string.Empty;
+                literalType = GetLiteralType(trimmedLine, out string remainingLine);
+                if (!AvailableTypes.ContainsKey(literalType))
+                    continue;
+                Type type = AvailableTypes[literalType];
+                string uniformName = string.Empty;
+                for (int n = 0; n < remainingLine.Length; n++)
+                    if (remainingLine[n] == ';')
+                        break;
+                    else
+                        uniformName += remainingLine[n];
+                data.Add(new(uniformName, type.Name));
+            }
+            successful = true;
+            return data.ToArray();
+        }
+
+        private static string GetLiteralType(string trimmedLine, out string remainingLine)
+        {
+            string literalType = string.Empty;
+            for (int r = 0; r < trimmedLine.Length; r++)
+                if (char.IsWhiteSpace(trimmedLine[r]))
+                    break;
+                else
+                    literalType += trimmedLine[r];
+            if(literalType == "lowp" || literalType == "mediump" || literalType == "highp")
+                return GetLiteralType(trimmedLine.Remove(0, literalType.Length).Trim(), out remainingLine);
+            remainingLine = trimmedLine.Remove(0, literalType.Length).Trim();
+            return literalType;
         }
 
         public string ShaderIdentifier => _pathFrag + _pathVert;

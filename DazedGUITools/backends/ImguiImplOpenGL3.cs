@@ -42,9 +42,6 @@ namespace DazedGUITools
             public int AttribLocationVtxColor;
             public int VboHandle;
             public int EboHandle;
-            // FIXME: ??
-            public bool HasPolygonMode;
-            public bool HasClipOrigin;
 
             public int GlslVersion;
             public bool KHRDebugAvailable;

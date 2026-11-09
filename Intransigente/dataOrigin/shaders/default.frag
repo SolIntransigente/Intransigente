@@ -1,9 +1,9 @@
 ﻿#version 330 core
 out vec4 FragColor;
 
-uniform lowp sampler2D mainTex;
+uniform lowp sampler2D mainTex; //exposed
 
-uniform lowp vec3 objectColor;
+uniform lowp vec3 objectColor; //exposed
 uniform lowp vec3 ambientColor;
 
 in lowp vec2 TexCoord;

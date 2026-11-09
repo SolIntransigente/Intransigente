@@ -1,9 +1,7 @@
 ﻿using Dazed.Vitals;
 using Dazed.Vitals.Rendering;
 using OpenTK.Graphics.OpenGL;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 
@@ -159,7 +157,9 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         {
             for(short i = 0; i < m_vertData.Length; i++)
             {
-                m_vertData[i].AddPosition(addedPos);            
+                if (!m_vertData[i].IsAbsoluteVertex)
+                    continue;
+                m_vertData[i].AddPosition(addedPos);
             }
             UpdateData();
         }
@@ -175,6 +175,30 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 else if(vert.Position + addedPos == m_vertData[i].Position)
                     return;
             vert.AddPosition(addedPos);
+            UpdateData();
+        }
+
+        internal void FlipNormal()
+        {
+            ushort[] newIndex = new ushort[m_indices.Length];
+            for (ushort i = 0; i < newIndex.Length; i++)
+                newIndex[i] = m_indices[m_indices.Length - i - 1];
+            for (ushort i = 0; i < newIndex.Length; i++)
+                m_indices[i] = newIndex[i];
+            UpdateData();
+        }
+
+        internal void SetPosition(int index, Vector3 toPosition)
+        {
+            var vert = VertexAt(index);
+            if (vert == null)
+                return;
+            for(short i = 0; i < m_vertData.Length; i++)
+                if (i == index)
+                    continue;
+                else if(toPosition == m_vertData[i].Position)
+                    return;
+            vert.Position = toPosition;
             UpdateData();
         }
     }

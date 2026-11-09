@@ -1,5 +1,7 @@
 #version 400 core
 #extension GL_EXT_gpu_shader4 : enable
+//invalid shader
+
 out vec4 FragColor;
 
 uniform vec3 objectColor; //The color of the object.

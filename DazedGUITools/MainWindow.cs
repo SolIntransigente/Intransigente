@@ -31,6 +31,7 @@ namespace DazedGUITools
 
         internal static string ProjectFolder => _projectFolder;
         internal static string ProjectResourcesFolder => Path.Combine(_projectFolder, CommonPaths.ResourcesFolderName);
+        internal static string ProjectShadersFolder => Path.Combine(_projectFolder, CommonPaths.ShadersFolderName);
         private static string _projectFolder = "null";
         private static StartUpWindow? _startUpWindow;
 

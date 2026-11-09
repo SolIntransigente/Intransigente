@@ -13,19 +13,16 @@ public readonly struct SerializedMaterialData
     [JsonProperty("l")]
     public readonly bool IsLit;
     [JsonProperty("u")]
-    public readonly string[] Uniforms;
-    [JsonProperty("v")]
-    public readonly object[] UniformValues;
+    public readonly SerializedMaterialProperty[] Properties;
 
     [JsonConstructor]
-    public SerializedMaterialData(string matName, string fragmentShaderPath, string vertexShaderPath, bool isLit, string[] uniforms, object[] vals)
+    public SerializedMaterialData(string matName, string fragmentShaderPath, string vertexShaderPath, bool isLit, SerializedMaterialProperty[] properties)
     {
         MaterialName = matName;
         FragmentShaderRelativePath = fragmentShaderPath;
         VertexShaderRelativePath = vertexShaderPath;
         IsLit = isLit;
-        Uniforms = uniforms;
-        UniformValues = vals;
+        Properties = properties;
     }
 
     [JsonIgnore]

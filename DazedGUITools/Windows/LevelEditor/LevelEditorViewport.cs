@@ -24,23 +24,25 @@ namespace DazedGUITools.Windows.LevelEditor
 
         private static LevelEditorToolsWindow s_toolsWindow = null!;
         private static LevelEditorSectionsWindows s_sectionsWindow = null!;
+        private static LevelEditorGeometryWindow s_geometryWindow = null!;
         public static float AspectRatio { get; internal set; } = 1;
 
         private static readonly KeyCombination PreviousVertexCombo = new (Keys.LeftControl, Keys.Space);
+        private static readonly KeyCombination FlipNormalCombo = new (Keys.LeftControl, Keys.F);
 
         protected override void OnInitialize()
         {
             LevelEditorContext.Initialize((short)StartingSize.X, (short)StartingSize.Y);
             s_toolsWindow = new LevelEditorToolsWindow();
             s_sectionsWindow = new LevelEditorSectionsWindows();
+            s_geometryWindow = new LevelEditorGeometryWindow();
         }
         protected override void Draw()
         {
             if (ImGui.Button("Close"))
             {
                 Close();
-                s_toolsWindow.Close();
-                s_sectionsWindow.Close();
+                CloseWindows();
             }
             if (ImGui.Button("Create quad"))
             {
@@ -59,6 +61,13 @@ namespace DazedGUITools.Windows.LevelEditor
                 AspectRatio = LevelEditorContext.Width / (float)LevelEditorContext.Height;
             ImGui.Image(LevelEditorContext.FrameBufferTexture, new(LevelEditorContext.Width, LevelEditorContext.Height));
             ProcessInput();
+        }
+
+        private static void CloseWindows()
+        {
+            s_toolsWindow.Close();
+            s_sectionsWindow.Close();
+            s_geometryWindow.Close();
         }
 
         private static void ProcessInput()
@@ -101,10 +110,12 @@ namespace DazedGUITools.Windows.LevelEditor
 
         private static void ProcessCommands()
         {
-            if(PreviousVertexCombo.FirstHoldSecondPressed())
+            if (PreviousVertexCombo.FirstHoldSecondPressed())
                 LevelEditorContext.ChangeVertex(false);
-            else if(Input.KeyJustPressed(Keys.Space))
+            else if (Input.KeyJustPressed(Keys.Space))
                 LevelEditorContext.ChangeVertex();
+            if (FlipNormalCombo.FirstHoldSecondPressed())
+                LevelEditorContext.SelectedGeometry?.FlipNormal();
         }
     }
 }

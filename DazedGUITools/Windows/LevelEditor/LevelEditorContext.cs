@@ -202,5 +202,12 @@ namespace DazedGUITools.Windows.LevelEditor
                 return;
             SelectedGeometry.AddPosition(addedPos);
         }
+
+        internal static VertexData? GetCurrentVertex()
+        {
+            if (SelectedGeometry == null)
+                return null;
+            return SelectedGeometry.VertexAt(SelectedVertexIndex);
+        }
     }
 }

@@ -16,7 +16,7 @@ namespace Dazed.Vitals
         public const string MapDataFolderName = "maps";
         public const string ExposedDataFile = "expDat.data";
         public const string LogsFolderName = "logs";
-
+        public const string MaterialFolderName = "materials";
         /// <summary>
         /// Includes the dot
         /// </summary>
@@ -28,5 +28,6 @@ namespace Dazed.Vitals
 
         public static string RelativeFontsFolder { get; } = Path.Combine(ResourcesFolderName, FontsFolderName);
         public static string RelativeMapFolder { get; } = Path.Combine(ResourcesFolderName, MapDataFolderName);
+        public static string RelativeMaterialsFolder {get;} = Path.Combine(ResourcesFolderName, MaterialFolderName);
     }
 }
