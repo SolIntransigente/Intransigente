@@ -106,7 +106,10 @@ internal class FramesDataHandler : IDisposable
     public void Dispose()
     {
         GL.DeleteTexture(FrameTextureHandle);
+<<<<<<< HEAD
         for (int i = 0; i < m_frames.Length; i++)
             m_frames[i] = Array.Empty<byte>();
+=======
+>>>>>>> 92cfd30ade04b59ff43d0fd2ad1801000aa3d036
     }
 }
