@@ -32,6 +32,7 @@ namespace Dazed.Vitals
         protected override void OnLoad()
         {
             base.OnLoad();
+            QuadData.SetQuadShader();
             Artist.Initialize();
             Artist.SetResolution(ClientSize.X, ClientSize.Y);
             

@@ -6,9 +6,9 @@ namespace Dazed.Vitals.Rendering
 {
     public static class QuadData
     {
-        public static Shader? QuadShader;
+        public static Shader QuadShader = null!;
 
-        internal static void SetQuadShaderIfNull()
+        internal static void SetQuadShader()
         {
             if (QuadShader != null)
                 return;
