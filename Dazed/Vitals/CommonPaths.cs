@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dazed.Vitals.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -25,9 +26,14 @@ namespace Dazed.Vitals
         /// Includes the dot
         /// </summary>
         public const string FragmentShaderFileExtension = ".frag";
+        /// <summary>
+        /// Includes dot
+        /// </summary>
+        public const string MaterialExtension = ".material";
 
         public static string RelativeFontsFolder { get; } = Path.Combine(ResourcesFolderName, FontsFolderName);
         public static string RelativeMapFolder { get; } = Path.Combine(ResourcesFolderName, MapDataFolderName);
         public static string RelativeMaterialsFolder {get;} = Path.Combine(ResourcesFolderName, MaterialFolderName);
+        public static string MissingTexturePath { get; } = Path.Combine(ResourcesFolderName, "missingtexture.png");
     }
 }

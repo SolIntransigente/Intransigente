@@ -106,4 +106,7 @@ public static class MathTeacher
             return false;
         return !(value > max);
     }
+
+    internal static OpenTK.Mathematics.Vector3 ToOpenTK(Vector3 v) => new(v.X, v.Y, v.Z);
+    internal static Vector3 ToNumerics(OpenTK.Mathematics.Vector3 v) => new(v.X, v.Y, v.Z);
 }

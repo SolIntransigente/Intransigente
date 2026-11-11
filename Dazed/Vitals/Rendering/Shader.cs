@@ -48,7 +48,11 @@ namespace Dazed.Vitals.Rendering
             if (!pathIsAbsolute)
             {
                 vertPath = Path.Combine(PathUtils.ShadersDirectory, vertPath);
+                if (!vertPath.EndsWith(CommonPaths.VertexShaderFileExtension))
+                    vertPath += CommonPaths.VertexShaderFileExtension;
                 fragPath = Path.Combine(PathUtils.ShadersDirectory, fragPath);
+                if (!fragPath.EndsWith(CommonPaths.FragmentShaderFileExtension))
+                    fragPath += CommonPaths.FragmentShaderFileExtension;
             }
             return GetShaderInstanceCommon(vertPath, fragPath);
         }
@@ -101,11 +105,14 @@ namespace Dazed.Vitals.Rendering
                 _pathVert = Path.Combine(PathUtils.ShadersDirectory, vertFile);
                 _pathFrag = Path.Combine(PathUtils.ShadersDirectory, fragFile);
             }
-            var vertexShaderSource = Secretary.ReadContent(PathUtils.ShadersDirectory, _pathVert, filePathIsAbsolute : true);
-            var fragmentShaderSource = Secretary.ReadContent(PathUtils.ShadersDirectory, _pathFrag, filePathIsAbsolute: true);
+            var vertexShaderSource = Secretary.ReadContent(PathUtils.ShadersDirectory, Path.GetFileName(_pathVert), filePathIsAbsolute : false);
+            var fragmentShaderSource = Secretary.ReadContent(PathUtils.ShadersDirectory, Path.GetFileName(_pathFrag), filePathIsAbsolute: false);
 
-            if (string.IsNullOrEmpty(vertexShaderSource) || string.IsNullOrEmpty(vertexShaderSource))
-                throw new Exception($"Either fragment shader at path <{_pathFrag}> or vertex shader at path <{_pathVert}> found an error while trying to be loaded.");
+            if (string.IsNullOrEmpty(vertexShaderSource) || string.IsNullOrEmpty(vertexShaderSource)) 
+            { 
+                Scriptorium.LogException(new Exception($"Either fragment shader at path <{_pathFrag}> or vertex shader at path <{_pathVert}> found an error while trying to be loaded."));
+                return;            
+            }
 
             _vertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(_vertexShader, vertexShaderSource);
@@ -218,7 +225,7 @@ namespace Dazed.Vitals.Rendering
         internal void SetVector3(string name, object vector3)
         {
             Use();
-            GL.Uniform3(_uniformLocations[name], (OpenTK.Mathematics.Vector3)vector3);
+            GL.Uniform3(_uniformLocations[name], MathTeacher.ToOpenTK((Vector3)vector3));
         }
 
         internal void SetVector2(string name, object vector2)

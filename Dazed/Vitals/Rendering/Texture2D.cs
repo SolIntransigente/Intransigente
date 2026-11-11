@@ -95,7 +95,6 @@ namespace Dazed.Vitals.Rendering
 
                 GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, TranslatePixelInternalFormat(), image.Width, image.Height, 0, TranslatePixelFormat(), PixelType.UnsignedByte, image.Data);
-                GL.TextureParameter(_textureHandle, TextureParameterName.GenerateMipmap, 1/*true*/);
                 GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
                 GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Nearest);
                 GL.BindTexture(TextureTarget.Texture2D, 0);

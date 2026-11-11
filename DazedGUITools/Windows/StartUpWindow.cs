@@ -53,6 +53,12 @@ namespace DazedGUITools.Windows
             }
         }
 
+        internal override void OnClosed()
+        {
+            PathUtils.OverwrittenBasePath = ResultPath;
+            PathUtils.IsBasePathOverwritten = true;
+        }
+
         private void SavePath()
         {
             var content = JsonConvert.SerializeObject(ResultPath);

@@ -1,9 +1,7 @@
 ﻿using Dazed.Vitals;
-using Dazed.Vitals.Content;
 using Dazed.Vitals.Rendering;
 using DazedGUITools.Windows;
 using ImGuiNET;
-using Newtonsoft.Json;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -65,7 +63,7 @@ namespace DazedGUITools
             ImGui.StyleColorsLight();
             var stPtr = ImGui.GetStyle();
             stPtr.WindowRounding = 0;
-            stPtr.FrameRounding = 2.3f;
+            stPtr.FrameRounding = 0f;
             stPtr.ScrollbarRounding = 0f;
         }
 
@@ -168,6 +166,7 @@ namespace DazedGUITools
             {
                 _projectFolder = _startUpWindow.ResultPath;
                 _startUpWindow = null;
+                Artist.Initialize();
                 GUIAppContext.Initialize();
             }
 
@@ -202,10 +201,6 @@ namespace DazedGUITools
                 return;
             if (ImGui.BeginMainMenuBar())
             {
-                if (ImGui.BeginMenu("Context Options"))
-                {
-                    ImGui.EndMenu();
-                }
                 if(ImGui.BeginMenu("Tool Windows"))
                 {
                     for(int i = 0; i < MainMenuWindowsName.Length; i++)
@@ -267,21 +262,21 @@ namespace DazedGUITools
                 switch (severity)
                 {
                     case DebugSeverity.DontCare:
-                        Console.WriteLine($"[DontCare] [{source}] {message}");
+                        Scriptorium.Message($"[DontCare] [{source}] {message}");
                         break;
                     case DebugSeverity.DebugSeverityNotification:
                         break;
                     case DebugSeverity.DebugSeverityHigh:
-                        Console.Error.WriteLine($"Error: [{source}] {message}");
+                        Scriptorium.Error($"Error: [{source}] {message}");
                         break;
                     case DebugSeverity.DebugSeverityMedium:
-                        Console.WriteLine($"Warning: [{source}] {message}");
+                        Scriptorium.Warn($"Warning: [{source}] {message}");
                         break;
                     case DebugSeverity.DebugSeverityLow:
-                        Console.WriteLine($"Info: [{source}] {message}");
+                        Scriptorium.Warn($"Info: [{source}] {message}");
                         break;
                     default:
-                        Console.WriteLine($"[default] [{source}] {message}");
+                        Scriptorium.Message($"[default] [{source}] {message}");
                         break;
                 }
             }

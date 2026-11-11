@@ -52,7 +52,7 @@ namespace Dazed.Vitals.Rendering
             m_mainTexture?.Use(OpenTK.Graphics.OpenGL.TextureUnit.Texture0);
         }
 
-        private void SetMainTexture(Texture2D texture)
+        public void SetMainTexture(Texture2D texture)
         {
             m_mainTexture = texture;
         }
@@ -83,7 +83,7 @@ namespace Dazed.Vitals.Rendering
             }
         }
 
-        public void SetVector3(string name, Vector3 value)
+        public void internalSetVector3(string name, System.Numerics.Vector3 value)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace Dazed.Vitals.Rendering
                 Scriptorium.LogException(ex);
             }
         }
-        public void SetVector3(string name, System.Numerics.Vector3 value) => SetVector3(name, (Vector3)value);
+        public void SetVector3(string name, System.Numerics.Vector3 value) => internalSetVector3(name, value);
         public void SetVector4(string name, Vector4 value)
         {
             try
@@ -108,7 +108,7 @@ namespace Dazed.Vitals.Rendering
                 Scriptorium.LogException(ex);
             }
         }
-        public void SetVector4(string name, System.Numerics.Vector4 value) => SetVector4(name, (Vector4)value);
+        public void SetVector4(string name, System.Numerics.Vector4 value) => SetVector4(name, value);
         public void SetVector4(string name, Color4 value)
         {
             try

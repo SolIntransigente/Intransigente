@@ -21,8 +21,6 @@ namespace DazedGUITools.Windows.ExposedFieldManagement
 
         public ExposedFieldsManager() : base("Expose fields manager", true)
         {
-            PathUtils.OverwrittenBasePath = MainWindow.ProjectFolder;
-            PathUtils.IsBasePathOverwritten = true;
             FindFields();
         }
 

@@ -18,7 +18,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         private Vector3 m_center;
         private readonly ushort[] m_indices;
 
-        private readonly Material GeometryShader;
+        private Material GeometryMaterial;
 
         /// <summary>
         /// Constructs a quad geometry by taking the max and min vertex - Order doesn't matter
@@ -51,8 +51,10 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             m_indices = indices;
             m_center = new();
             ParentedSection = LevelEditorContext.CurrentlySelectedSection;
-            var shader = Shader.GetNewShaderInstance(Path.Combine(MainWindow.ProjectFolder, $"{CommonPaths.ShadersFolderName}\\default.vert"), Path.Combine(MainWindow.ProjectFolder, $"{CommonPaths.ShadersFolderName}\\default.frag"), true);
-            GeometryShader = Material.GetMaterialInstance(shader);
+            string fragPath = Path.Combine(MainWindow.ProjectFolder, $"{CommonPaths.ShadersFolderName}\\default.frag");
+            string vertPath = Path.Combine(MainWindow.ProjectFolder, $"{CommonPaths.ShadersFolderName}\\default.vert");
+            var shader = Shader.GetNewShaderInstance(vertPath, fragPath, true);
+            GeometryMaterial = Material.GetMaterialInstance(shader);
             UpdateData();
         }
 
@@ -99,11 +101,11 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
 
         private void SetAttributes()
         {
-            int positionLocation = GeometryShader.GetAttribLocation("aPos");
+            int positionLocation = GeometryMaterial.GetAttribLocation("aPos");
             GL.EnableVertexAttribArray(positionLocation);
             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
 
-            int textCoord = GeometryShader.GetAttribLocation("aTexCoords");
+            int textCoord = GeometryMaterial.GetAttribLocation("aTexCoords");
             GL.EnableVertexAttribArray(textCoord);
             GL.VertexAttribPointer(textCoord, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
         }
@@ -128,10 +130,10 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         {
             GL.BindVertexArray(_vertexArrayObject);
             //TODO: Set object position
-            GeometryShader.SetMatrix4("model", Matrix4x4.Identity);
-            GeometryShader.SetMatrix4("projection", LevelEditorCamera.Projection);
-            GeometryShader.SetMatrix4("view", LevelEditorCamera.View);
-            GeometryShader.UseMaterial();
+            GeometryMaterial.SetMatrix4("model", Matrix4x4.Identity);
+            GeometryMaterial.SetMatrix4("projection", LevelEditorCamera.Projection);
+            GeometryMaterial.SetMatrix4("view", LevelEditorCamera.View);
+            GeometryMaterial.UseMaterial();
             GL.DrawElements(PrimitiveType.Triangles, m_indices.Length, DrawElementsType.UnsignedShort, 0);
             GL.BindVertexArray(0);
         }
@@ -199,6 +201,41 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 else if(toPosition == m_vertData[i].Position)
                     return;
             vert.Position = toPosition;
+            UpdateData();
+        }
+
+        public bool TrySetMaterial(string path, out string message) 
+        {
+            message = string.Empty;
+            if (!path.EndsWith(CommonPaths.MaterialExtension)) 
+            {
+                message = $"File is not material, or does not have the appropiate extesion '{CommonPaths.MaterialExtension}'";
+                return false;
+            }
+            var data = Cereal.SafeLoadData<SerializedMaterialData>(path, out bool successful);
+            if (!successful) 
+            {
+                message = "File failed at being deserialized";
+                return false;
+            }
+            try 
+            { 
+                var matInstance = Material.GetMaterialInstance(data);
+                GeometryMaterial = matInstance;
+                GeometryMaterial.SetVector3("lightColor", (Vector3)new Color(1,1,1));
+                GeometryMaterial.SetVector3("objectColor", (Vector3)new Color(1,0,0));
+                GeometryMaterial.SetMainTexture(Artist.MissingTexture);
+            }
+            catch (Exception ex) 
+            {
+                message = ex.Message;
+                return false;
+            }
+            return true;
+        }
+
+        internal void ForceUpdate()
+        {
             UpdateData();
         }
     }

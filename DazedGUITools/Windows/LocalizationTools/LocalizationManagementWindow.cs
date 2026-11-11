@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Dazed.Vitals;
 using Dazed.Vitals.Localization;
 using ImGuiNET;
@@ -13,7 +11,7 @@ namespace DazedGUITools.Windows.LocalizationTools;
 public class LocalizationManagementWindow : WindowBaseClass
 {
 	private bool _creatingLocal;
-	private bool CanSave => File.Exists(LocalizationData.MainStringTablePath) && File.Exists(LocalizationData.CurrentStringTablePath);
+	private static bool CanSave => File.Exists(LocalizationData.MainStringTablePath) && File.Exists(LocalizationData.CurrentStringTablePath);
 	
 	public LocalizationManagementWindow() : base("Localization Manager", true)
 	{

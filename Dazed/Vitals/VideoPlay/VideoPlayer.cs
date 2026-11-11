@@ -50,8 +50,6 @@ namespace Dazed.Vitals.VideoPlay
             _width = (short)_capture.Get(CapProp.FrameWidth);
             _height = (short)_capture.Get(CapProp.FrameHeight);
             _aspectRatio = (float)_width / _height;
-            // _textureHandle = GL.GenTexture();
-            // _framesData = new FrameData[_frameCount];
             m_handler = new((int)_frameCount, _height, _width, (int) m_framesPerSecond);
 
             _capture.ImageGrabbed += ImageGrabbed;
@@ -73,13 +71,7 @@ namespace Dazed.Vitals.VideoPlay
             if (!_capture.Retrieve(mat))
                 throw new Exception("An error occurred while grabbing a new frame");
             var thisIndex = m_latestSentIndex++;
-            // while (!m_handler.Vacancy)
-            // {
-            //     Scriptorium.Warn("Waiting | Ahead");
-            //     Thread.Sleep(10);
-            // }
             m_handler.AddFrame((byte[])mat.GetData(false));
-            // _framesData[_currentOffset++] = new(mat.GetData(false));
         }
 
         public new void Dispose()
@@ -92,7 +84,6 @@ namespace Dazed.Vitals.VideoPlay
             _disposed = true;
             Artist.OnWidowResize -= WidthHeightSetUp;
             m_handler.Dispose();
-            // GL.DeleteTexture(_textureHandle);
         }
 
         public void WidthHeightSetUp()
@@ -121,48 +112,10 @@ namespace Dazed.Vitals.VideoPlay
                 _elapsedSinceUpdate.Start();
 
             _currentFrame = (int)(_elapsedSinceUpdate.ElapsedMilliseconds / _interval);
-            // if (_currentFrame >= _framesData.Length)
-            // {
-            //     int count = 0;
-            //     while (true)
-            //     {
-            //         if (_currentFrame < _framesData.Length)
-            //             break;
-            //         count++;
-            //         if (count >= short.MaxValue)
-            //             return;
-            //     }
-            // }
-            // PrepareFrame(ref _framesData[_currentFrame]);
             GL.Viewport(_dX, _dY, _dWidth, _dHeight);
             m_handler.SetFrameData(_currentFrame);
             _videoPlayerRenderer.Render(m_handler.FrameTextureHandle);
             GL.Viewport(0, 0, Artist.Width, Artist.Height);
         }
-
-        // private void PrepareFrame(ref FrameData frame)
-        // {
-        //     GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
-        //     try
-        //     {
-        //         if (frame != null)
-        //         {
-        //             byte[] pixels = frame.ToArray();
-        //             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R3G3B2, _width, _height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, pixels);
-        //             GL.TextureParameter(_textureHandle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-        //             GL.TextureParameter(_textureHandle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-        //         }
-        //     }
-        //     catch(Exception ex)
-        //     {
-        //         Scriptorium.Error($"Frame preparation for frame at index <{_currentFrame}> for file <{_path}> failed with the following exception");
-        //         Scriptorium.LogException(ex);
-        //     }
-        //     finally
-        //     {
-        //         frame?.Dispose();
-        //         GL.BindTexture(TextureTarget.Texture2D, 0);
-        //     }
-        // }
     }
 }

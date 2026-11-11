@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Numerics;
 
 namespace DazedGUITools.Windows.LevelEditor.Representations
@@ -19,15 +18,15 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 else
                 {
                     Vector3 value = new();
-                    if (_flag!.Value.useX0)
+                    if (Flag.useX0)
                         value.X = v0.Position.X;
                     else
                         value.X = v1.Position.X;
-                    if (_flag!.Value.useY0)
+                    if (Flag.useY0)
                         value.Y = v0.Position.Y;
                     else
                         value.Y = v1.Position.Y;
-                    if (_flag!.Value.useZ0)
+                    if (Flag.useZ0)
                         value.Z = v0.Position.Z;
                     else
                         value.Z = v1.Position.Z;
@@ -42,14 +41,14 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 }
                 else
                 {
-                    if(_flag!.Value.useX0 || _flag.Value.useY0 || _flag.Value.useZ0)
+                    if(Flag.useX0 || Flag.useY0 || Flag.useZ0)
                     {
-                        Vector3 pos0 = new Vector3(_flag.Value.useX0 ? value.X : v0.Position.X, _flag.Value.useY0 ? value.Y : v0.Position.Y, _flag.Value.useZ0 ? value.Z : v0.Position.Z);
+                        Vector3 pos0 = new Vector3(Flag.useX0 ? value.X : v0.Position.X, Flag.useY0 ? value.Y : v0.Position.Y, Flag.useZ0 ? value.Z : v0.Position.Z);
                         ParentedVertices[0].Position = pos0;
                     }
-                    if(!_flag.Value.useX0 || !_flag.Value.useY0 || !_flag.Value.useZ0)
+                    if(!Flag.useX0 || !Flag.useY0 || !Flag.useZ0)
                     {
-                        Vector3 pos1 = new Vector3(!_flag.Value.useX0 ? value.X : v1.Position.X, !_flag.Value.useY0 ? value.Y : v1.Position.Y, !_flag.Value.useZ0 ? value.Z : v1.Position.Z);
+                        Vector3 pos1 = new Vector3(!Flag.useX0 ? value.X : v1.Position.X, !Flag.useY0 ? value.Y : v1.Position.Y, !Flag.useZ0 ? value.Z : v1.Position.Z);
                         ParentedVertices[1].Position = pos1;
                     }
                 }
@@ -67,7 +66,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         }
         private Vector3 _normal;
         private Vector3 _pos;
-        private VertexReferenceFlags? _flag;
+        public VertexReferenceFlags Flag;
         private readonly VertexData[]? ParentedVertices;
         private VertexData v0 => ParentedVertices![0];
         private VertexData v1 => ParentedVertices![1];
@@ -83,7 +82,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             ParentedVertices[0] = referencedVertex0;
             ParentedVertices[1] = referencedVertex1;
             IsAbsoluteVertex = false;
-            _flag = flag;
+            Flag = flag;
         }
         public float[] GetTextureCoordinates()
         {
@@ -98,8 +97,8 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
 
             var c21 = Vector2.Lerp(c2, c1, alpha21);
             var c23 = Vector2.Lerp(c21, c3, alpha23);
-            texCoordinates[0] = c23.X;
-            texCoordinates[1] = c23.Y;
+            texCoordinates[0] = 1 - c23.X;
+            texCoordinates[1] = 1 - c23.Y;
             return texCoordinates;
         }
 

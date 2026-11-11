@@ -1,9 +1,7 @@
 ﻿using Dazed.Vitals;
-using Dazed.Vitals.Rendering;
 using DazedGUITools.Windows.LevelEditor.LevelEditorTools;
 using DazedGUITools.Windows.LevelEditor.Representations;
 using OpenTK.Graphics.OpenGL;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -80,8 +78,6 @@ namespace DazedGUITools.Windows.LevelEditor
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb, s_width, s_height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, 0);
             GL.TextureParameter(FrameBufferTexture, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             GL.TextureParameter(FrameBufferTexture, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TextureParameter(FrameBufferTexture, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-            GL.TextureParameter(FrameBufferTexture, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
             GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, FrameBufferTexture, 0);
 
             if (s_rbo == 0)
@@ -121,7 +117,7 @@ namespace DazedGUITools.Windows.LevelEditor
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.Viewport(0, 0, s_width, s_height);
-            //---------------------------------
+            //DRAWING--------------------------
             s_currentTool?.Operate();
             for(int i = 0; i < s_sections.Count; i++)
             {
@@ -130,7 +126,7 @@ namespace DazedGUITools.Windows.LevelEditor
                 foreach (var geom in s_sectionGeometry[s_sections[i]])
                     geom?.Draw();
             }
-            //---------------------------------
+            //END DRAWING----------------------
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
             RenderSelectedVertex();

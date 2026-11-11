@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using Dazed.Vitals;
 using Dazed.Vitals.Rendering;
 using OpenTK.Graphics.OpenGL;
 
@@ -12,7 +13,10 @@ internal class VertexHighlight
 
     static VertexHighlight()
     {
+        var previousState = PathUtils.IsBasePathOverwritten;
+        PathUtils.IsBasePathOverwritten = false;
         s_vertMaterial = Material.GetMaterialInstance(Shader.GetNewShaderInstance("sphereShader"));
+        PathUtils.IsBasePathOverwritten = previousState;
         var _vertexBufferObject = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
         GL.BufferStorage(BufferTarget.ArrayBuffer, CubeData.VerticesSize, CubeData.Vertices, BufferStorageFlags.None);

@@ -167,10 +167,15 @@ namespace Dazed.Vitals.Rendering
             RefreshRenderingInfo();
         }
 
-        internal static void Initialize()
+        /// <summary>
+        /// Only execute this if you know what you're doing
+        /// </summary>
+        public static void Initialize()
         {
+            MissingTexture = Texture2D.GetTextureInstance(CommonPaths.MissingTexturePath);
+            if (!DazedInstance.IsContextRuntime)
+                return;
             ExposedData.RetrieveAll(typeof(Artist), null);
-            MissingTexture = Texture2D.GetTextureInstance(_missingTexturePath!.AssetRelativePath);
 
             var baseParams = Light.BaseParameters;
             string[] pointParams = [.. Light.BaseParameters, .. PointLight.Parameters];

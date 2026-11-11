@@ -30,7 +30,7 @@ namespace DazedGUITools.Windows.LocalizationTools
 
         internal static int ItemsCount => _identifiers.Count;
 
-        private static int _itemQueuedForDeletion;
+        private static int _itemQueuedForDeletion = -1;
 
         private static SerializedLanguageInfo CurrentLanguageInfo => _languageInfo[_currentLanguageIndex];
         internal static string CurrentStringTablePath => Path.Combine(LocalizationFolderPath, $"{CurrentLanguageInfo.ShortName}{Locals.StringTableFileExtension}");
@@ -39,13 +39,9 @@ namespace DazedGUITools.Windows.LocalizationTools
         {
             if (!Path.Exists(MainStringTablePath))
                 return;
-            LoadMainStringTable();
             FindLocalizations();
             if (LocalizationsExist)
-            {
                 _currentLanguageIndex = 0;
-                LoadLocalization();
-            }
         }
 
         internal static void FindLocalizations()

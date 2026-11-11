@@ -53,7 +53,13 @@ namespace DazedGUITools.Windows
         /// <summary>
         /// Marks window for disposal after completing the current draw cycle.
         /// </summary>
-        internal void Close() => MarkedForDisposal = true;
+        internal void Close()
+        {
+            MarkedForDisposal = true;
+            OnClosed();
+        }
+
+        internal virtual void OnClosed() { }
 
         internal void CallDraw()
         {
