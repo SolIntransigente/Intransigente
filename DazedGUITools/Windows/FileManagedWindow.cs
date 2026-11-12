@@ -6,20 +6,16 @@ using System.Text;
 
 namespace DazedGUITools.Windows
 {
-    public abstract class FileManagedWindow : WindowBaseClass
+    public static class ImGuiFile
     {
-        protected FileManagedWindow(string title, bool exclusive) : base(title, exclusive)
-        {
-        }
-
-        protected void PathValidMessage(string path, out bool pathIsCompatible)
+        public static void PathValidMessage(string path, out bool pathIsCompatible)
         {
             pathIsCompatible = PathUtils.IsValidPath(path);
             if (!pathIsCompatible)
                 ImGui.TextColored(Vector4Colors.Red, "Please enter a proper path!");
         }
 
-        protected bool InputFile(string label, ref string result)
+        public static bool InputFile(string label, ref string result)
         {
             bool modified = false;
             if (ImGui.Button("Search##"+label))
@@ -32,7 +28,7 @@ namespace DazedGUITools.Windows
             return modified;
         }
 
-        protected bool InputDirectory(string label, ref string result)
+        public static bool InputDirectory(string label, ref string result)
         {
             bool modified = false;
             if (ImGui.Button("Search##"+label))

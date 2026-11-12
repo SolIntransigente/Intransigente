@@ -18,17 +18,26 @@ namespace Dazed.Vitals.Rendering
         private readonly Dictionary<string, int> _uniformLocations = new();
 
         private readonly Dictionary<Type, Action<string, object>> ValueAssignments = [];
-        private static readonly Dictionary<string, Type> AvailableTypes;
+        private static readonly Dictionary<string, Type> LiteralTypeToType;
+        private static readonly Dictionary<string, Type> TypeNameToType;
 
         static Shader()
         {
-            AvailableTypes = [];
-            AvailableTypes.Add("vec4", typeof(Vector4));
-            AvailableTypes.Add("vec3", typeof(Vector3));
-            AvailableTypes.Add("vec2", typeof(Vector2));
-            AvailableTypes.Add("float", typeof(float));
-            AvailableTypes.Add("bool", typeof(bool));
-            AvailableTypes.Add("sampler2D", typeof(AssetPath));
+            LiteralTypeToType = [];
+            LiteralTypeToType.Add("vec4", typeof(Vector4));
+            LiteralTypeToType.Add("vec3", typeof(Vector3));
+            LiteralTypeToType.Add("vec2", typeof(Vector2));
+            LiteralTypeToType.Add("float", typeof(float));
+            LiteralTypeToType.Add("bool", typeof(bool));
+            LiteralTypeToType.Add("sampler2D", typeof(AssetPath));
+
+            TypeNameToType = [];
+            TypeNameToType.Add(typeof(Vector4).Name, typeof(Vector4));
+            TypeNameToType.Add(typeof(Vector3).Name, typeof(Vector3));
+            TypeNameToType.Add(typeof(Vector2).Name, typeof(Vector2));
+            TypeNameToType.Add(typeof(float).Name, typeof(float));
+            TypeNameToType.Add(typeof(bool).Name, typeof(bool));
+            TypeNameToType.Add(typeof(AssetPath).Name, typeof(AssetPath));
         }
 
         public static Shader GetNewShaderInstance(string path, bool pathIsAbsolute = false)
@@ -314,16 +323,16 @@ namespace Dazed.Vitals.Rendering
                 string trimmedLine = lines[i].Remove(0, UniformLabel.Length).Trim();
                 string literalType = string.Empty;
                 literalType = GetLiteralType(trimmedLine, out string remainingLine);
-                if (!AvailableTypes.ContainsKey(literalType))
+                if (!LiteralTypeToType.ContainsKey(literalType))
                     continue;
-                Type type = AvailableTypes[literalType];
+                Type type = LiteralTypeToType[literalType];
                 string uniformName = string.Empty;
                 for (int n = 0; n < remainingLine.Length; n++)
                     if (remainingLine[n] == ';')
                         break;
                     else
                         uniformName += remainingLine[n];
-                data.Add(new(uniformName, type.Name));
+                data.Add(new(uniformName, type.Name, Activator.CreateInstance(type, true)));
             }
             successful = true;
             return data.ToArray();
@@ -342,6 +351,10 @@ namespace Dazed.Vitals.Rendering
             remainingLine = trimmedLine.Remove(0, literalType.Length).Trim();
             return literalType;
         }
+
+        public static Type GetTypeFor(string uniformType) => TypeNameToType[uniformType];
+
+        internal bool HasUniform(string uniformName) => _uniformLocations.ContainsKey(uniformName);
 
         public string ShaderIdentifier => _pathFrag + _pathVert;
 

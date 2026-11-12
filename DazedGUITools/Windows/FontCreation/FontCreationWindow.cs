@@ -11,7 +11,7 @@ using Font = Dazed.Vitals.Font;
 namespace DazedGUITools.Windows.FontCreation
 {
     [MainMenuWindow("Font creation")]
-    public class FontCreationWindow() : FileManagedWindow("Font Creation", true)
+    public class FontCreationWindow() : WindowBaseClass("Font Creation", true)
     {
         //TODO: Add more characters
         private const string DefaultCharacterOrder = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789";
@@ -51,8 +51,8 @@ namespace DazedGUITools.Windows.FontCreation
                 ImGui.InputText("Chars", ref _manualCharacterOrder, 1024);
                 ImGui.Spacing();
                 ImGui.Spacing();
-                PathValidMessage(_currentSetTexturePath, out bool pathIsCompatible);
-                InputFile("Texture path", ref _currentSetTexturePath);
+                ImGuiFile.PathValidMessage(_currentSetTexturePath, out bool pathIsCompatible);
+                ImGuiFile.InputFile("Texture path", ref _currentSetTexturePath);
                 ImGui.Spacing();
 
                 ImGui.InputInt("Width", ref _charWidth);
@@ -65,8 +65,8 @@ namespace DazedGUITools.Windows.FontCreation
                 ImGui.TextColored(Vector4Colors.Blue, "Create automatically with individual characters' textures, compiled then into an atlas.");
                 ImGui.Spacing();
 
-                PathValidMessage(_currentSetCharactersDirectory, out bool pathIsCompatible);
-                if (InputDirectory("All characters directory", ref _currentSetCharactersDirectory))
+                ImGuiFile.PathValidMessage(_currentSetCharactersDirectory, out bool pathIsCompatible);
+                if (ImGuiFile.InputDirectory("All characters directory", ref _currentSetCharactersDirectory))
                     _gotFileLength = false;
                 if (ImGui.Button("Reload"))
                     _gotFileLength = false;

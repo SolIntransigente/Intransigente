@@ -1,14 +1,16 @@
-﻿using OpenTK.Mathematics;
+﻿using Newtonsoft.Json.Linq;
+using OpenTK.Mathematics;
 
 namespace Dazed.Vitals.Rendering
 {
     public class Material
     {
-        private readonly Shader _materialShader;
-        private readonly Dictionary<string, int> _keyToIndex = [];
-        private readonly List<MaterialParameter> _params = [];
+        private readonly Shader m_shader;
+        private readonly Dictionary<string, int> m_keyToIndex = [];
+        private readonly List<MaterialParameter> m_params = [];
 
         private Texture2D? m_mainTexture;
+        private string m_identifier;
 
         internal event Action<int>? OnParameterChange;
 
@@ -28,11 +30,13 @@ namespace Dazed.Vitals.Rendering
                 if (Indexes.TryGetValue(matShader.ShaderIdentifier, out var index))
                     return InstancedMaterials[index];
             Material? m = null;
-            m = new Material(matShader, litMaterial);
+            m = new Material(matShader, isLit: litMaterial);
             Indexes.Add(matShader.ShaderIdentifier, InstancedMaterials.Count);
             InstancedMaterials.Add(m);
             return m;
         }
+
+        public static Material GetMaterialInstance(string pathToMaterialData, bool forceNewInstance = false) => GetMaterialInstance(Cereal.LoadData<SerializedMaterialData>(pathToMaterialData), forceNewInstance);
 
         public static Material GetMaterialInstance(SerializedMaterialData data, bool forceNewInstance = false)
         {
@@ -40,10 +44,37 @@ namespace Dazed.Vitals.Rendering
                 if (Indexes.TryGetValue(data.ShaderIdentification, out var index))
                     return InstancedMaterials[index];
             Material? m = null;
-            m = new Material(Shader.GetNewShaderInstance(data.VertexShaderRelativePath, data.FragmentShaderRelativePath), data.IsLit);
+            m = new Material(Shader.GetNewShaderInstance(data.VertexShaderRelativePath, data.FragmentShaderRelativePath), data.MaterialName, data.IsLit);
+            m.SetData(data);
             Indexes.Add(data.ShaderIdentification, InstancedMaterials.Count);
             InstancedMaterials.Add(m);
             return m;
+        }
+
+        private void SetData(SerializedMaterialData data)
+        {
+            for(int i = 0; i < data.Properties.Length; i++)
+            {
+                if (!m_shader.HasUniform(data.Properties[i].UniformName))
+                {
+                    Scriptorium.Warn($"Material '{m_identifier}' does not have the uniform '{data.Properties[i].UniformName}' so this property was skipped");
+                    continue;
+                }
+
+                m_shader.SetInterpretedValue(data.Properties[i].UniformName, GetProperValue(data.Properties[i].UniformValue, data.Properties[i].UniformType));
+            }
+        }
+
+        private object? GetProperValue(object? uniformValue, string typeName)
+        {
+            if (uniformValue == null)
+                return null;
+            Type uniformType = Shader.GetTypeFor(typeName);
+            if (uniformValue.GetType() == typeof(JObject))
+            {
+                return ((JObject)uniformValue).ToObject(uniformType);
+            }
+            else return uniformValue;
         }
 
         public void UseMaterial()
@@ -149,30 +180,31 @@ namespace Dazed.Vitals.Rendering
 
         private void UpdateShaderParameters()
         {
-            _params.Clear();
-            _keyToIndex.Clear();
+            m_params.Clear();
+            m_keyToIndex.Clear();
             GetUniformsFromShader();
             UpdateShaderParameters(true);
         }
 
         private void UpdateShaderParameters(bool forceReload = false)
         {
-            for(int i = 0; i < _params.Count; i++)
+            for(int i = 0; i < m_params.Count; i++)
             {
-                if (!forceReload && !_params[i].Changed)
+                if (!forceReload && !m_params[i].Changed)
                     continue;
-                _materialShader.SetInterpretedValue(_params[i].Name, _params[i].Value);
-                _params[i].UnflagChange();
+                m_shader.SetInterpretedValue(m_params[i].Name, m_params[i].Value);
+                m_params[i].UnflagChange();
             }
         }
 
-        private int ParameterLocation(string name) => _keyToIndex[name];
-        private void SetValue<T>(string name, T value) where T : struct => _params[ParameterLocation(name)].SetValue(value);
+        private int ParameterLocation(string name) => m_keyToIndex[name];
+        private void SetValue<T>(string name, T value) where T : struct => m_params[ParameterLocation(name)].SetValue(value);
 
-        private Material(Shader shader, bool litMaterial = false)
+        private Material(Shader shader, string? identifier = null, bool isLit = false)
         {
-            _materialShader = shader;
-            if (litMaterial)
+            m_shader = shader;
+            m_identifier = identifier ?? "UNDEFINED MATERIAL";
+            if (isLit)
                 Artist.AddLitMaterial(this);
             Shader.AfterShaderReload += UpdateShaderParameters;
             GetUniformsFromShader();
@@ -180,15 +212,15 @@ namespace Dazed.Vitals.Rendering
 
         private void GetUniformsFromShader()
         {
-            string[] keys = _materialShader.GetUniformsKeys();
-            _params.Capacity = keys.Length;
+            string[] keys = m_shader.GetUniformsKeys();
+            m_params.Capacity = keys.Length;
             for(int i = 0; i < keys.Length; i++)
             {
-                _params.Add(new(keys[i], default));
-                _keyToIndex.Add(keys[i], i);
+                m_params.Add(new(keys[i], default));
+                m_keyToIndex.Add(keys[i], i);
             }
         }
 
-        public int GetAttribLocation(string v) => _materialShader.GetAttribLocation(v);
+        public int GetAttribLocation(string v) => m_shader.GetAttribLocation(v);
     }
 }

@@ -21,8 +21,15 @@ namespace DazedGUITools.Windows.BinExploration
             _currentRelativePath = currentRelativePath;
             _fileName = fileName;
             DrawingFunction = GetProperDrawingFunction();
-            if (DrawingFunction != null)
-                DrawingFunction.Initialize(Path.Combine(MainWindow.ProjectFolder, Path.Combine(_currentRelativePath, _fileName)));
+            try
+            {
+                if (DrawingFunction != null)
+                    DrawingFunction.Initialize(Path.Combine(MainWindow.ProjectFolder, Path.Combine(_currentRelativePath, _fileName)));
+            }
+            catch(Exception ex)
+            {
+                Scriptorium.LogException(ex);
+            }
         }
 
         private FileInfoDrawingBase? GetProperDrawingFunction()

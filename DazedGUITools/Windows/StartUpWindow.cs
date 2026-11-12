@@ -8,13 +8,15 @@ using Newtonsoft.Json;
 
 namespace DazedGUITools.Windows
 {
-    internal class StartUpWindow : FileManagedWindow
+    internal class StartUpWindow : WindowBaseClass
     {
+        internal static bool s_forcePathAssignment;
+
         public string ResultPath { get; private set; } = "";
         string _currentSetPath = "";
 
         private bool _foundConfig;
-
+        //TODO: Replace serialization with Cereal static class
         public StartUpWindow() : base("Starting up...", true)
         {
             if (File.Exists(PathUtils.BaseDirectoryCombine("path.cfg")))
@@ -32,6 +34,11 @@ namespace DazedGUITools.Windows
         {
             if (_foundConfig)
             {
+                if (!s_forcePathAssignment)
+                {
+                    Close();
+                    return;
+                }
                 if(ImGui.Button("Previously assigned folder"))
                 {
                     Close();
@@ -43,8 +50,8 @@ namespace DazedGUITools.Windows
                 return;
             }
             ImGui.Text("Please select a path to use for resources and shaders");
-            PathValidMessage(_currentSetPath, out bool pathIsCompatible);
-            InputDirectory("Path", ref _currentSetPath);
+            ImGuiFile.PathValidMessage(_currentSetPath, out bool pathIsCompatible);
+            ImGuiFile.InputDirectory("Path", ref _currentSetPath);
             if(ImGui.Button("Select") && pathIsCompatible)
             {
                 ResultPath = _currentSetPath;

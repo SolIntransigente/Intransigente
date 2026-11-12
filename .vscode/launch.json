@@ -9,7 +9,7 @@
             "program": "${workspaceFolder}/DazedGUITools/bin/Debug/net10.0-windows/DazedGUITools.dll",
             "args": [],
             "cwd": "${workspaceFolder}/DazedGUITools",
-            "console": "internalConsole",
+            "console": "externalTerminal",
         },
         {
             "name": "Intransigente",

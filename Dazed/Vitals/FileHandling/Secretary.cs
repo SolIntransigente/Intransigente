@@ -62,6 +62,33 @@ namespace Dazed.Vitals.FileHandling
                 Scriptorium.LogException(ex);
             }
         }
+        public static void SaveContent(string path, string data, out bool successful, bool forceFolderCreation = true, bool forceFileCreation = true)
+        {
+            successful = false;
+            if (string.IsNullOrEmpty(path))
+            {
+                Scriptorium.Warn($"<{path}> path is empty / null");
+                return;
+            }
+            try
+            {
+                if (!CanUseFolder(path, forceFolderCreation))
+                    return;
+                if (!CanUseFile(forceFileCreation, path))
+                    return;
+                File.WriteAllText(path, data);
+                successful = true;
+            }
+            catch(Exception ex)
+            {
+                Scriptorium.LogException(ex);
+            }
+        }
+        public static bool SaveContent(string path, string data, bool forceFolderCreation = true, bool forceFileCreation = true)
+        {
+            SaveContent(path, data, out bool wasSuccessful, forceFolderCreation, forceFileCreation);
+            return wasSuccessful;
+        }
         public static bool SaveContent(string folder, string file, string data, bool forceFolderCreation = true, bool forceFileCreation = true)
         {
             SaveContent(folder, file, data, out bool wasSuccessful, forceFolderCreation, forceFileCreation);
@@ -86,6 +113,9 @@ namespace Dazed.Vitals.FileHandling
 
         private static bool CanUseFolder(string folder, bool forceFolderCreation)
         {
+            //Checking if folder path is actually a file path
+            if (folder.Contains('.'))
+                folder = Path.GetPathRoot(folder);
             if (!Directory.Exists(folder))
                 if (forceFolderCreation)
                     Directory.CreateDirectory(folder);

@@ -18,6 +18,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         private Vector3 m_center;
         private readonly ushort[] m_indices;
 
+        public string m_materialPath; 
         private Material GeometryMaterial;
 
         /// <summary>
@@ -51,10 +52,9 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             m_indices = indices;
             m_center = new();
             ParentedSection = LevelEditorContext.CurrentlySelectedSection;
-            string fragPath = Path.Combine(MainWindow.ProjectFolder, $"{CommonPaths.ShadersFolderName}\\default.frag");
-            string vertPath = Path.Combine(MainWindow.ProjectFolder, $"{CommonPaths.ShadersFolderName}\\default.vert");
-            var shader = Shader.GetNewShaderInstance(vertPath, fragPath, true);
-            GeometryMaterial = Material.GetMaterialInstance(shader);
+            m_materialPath = Path.Combine(MainWindow.ProjectResourcesFolder, CommonPaths.MaterialFolderName);
+            m_materialPath = Path.Combine(m_materialPath, "default" + CommonPaths.MaterialExtension);
+            GeometryMaterial = Material.GetMaterialInstance(m_materialPath);
             UpdateData();
         }
 
@@ -129,7 +129,6 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         internal void Draw()
         {
             GL.BindVertexArray(_vertexArrayObject);
-            //TODO: Set object position
             GeometryMaterial.SetMatrix4("model", Matrix4x4.Identity);
             GeometryMaterial.SetMatrix4("projection", LevelEditorCamera.Projection);
             GeometryMaterial.SetMatrix4("view", LevelEditorCamera.View);
@@ -222,15 +221,13 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             { 
                 var matInstance = Material.GetMaterialInstance(data);
                 GeometryMaterial = matInstance;
-                GeometryMaterial.SetVector3("lightColor", (Vector3)new Color(1,1,1));
-                GeometryMaterial.SetVector3("objectColor", (Vector3)new Color(1,0,0));
-                GeometryMaterial.SetMainTexture(Artist.MissingTexture);
             }
             catch (Exception ex) 
             {
                 message = ex.Message;
                 return false;
             }
+            m_materialPath = path;
             return true;
         }
 

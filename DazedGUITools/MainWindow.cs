@@ -83,8 +83,9 @@ namespace DazedGUITools
             return windows;
         }
 
-        public MainWindow() : base(GameWindowSettings.Default, new NativeWindowSettings() { WindowState = WindowState.Maximized, APIVersion = new Version(3, 3) })
+        public MainWindow(bool forcePathSetting) : base(GameWindowSettings.Default, new NativeWindowSettings() { WindowState = WindowState.Maximized, APIVersion = new Version(3, 3) })
         {
+            StartUpWindow.s_forcePathAssignment = forcePathSetting;
         }
 
         protected override void OnLoad()

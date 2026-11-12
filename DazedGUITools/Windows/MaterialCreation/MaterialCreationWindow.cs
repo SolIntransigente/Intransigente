@@ -6,7 +6,7 @@ using ImGuiNET;
 
 namespace DazedGUITools.Windows.MaterialCreation;
 [MainMenuWindow("Material Creation")]
-public class MaterialCreationWindow() : FileManagedWindow("Material Creation", true)
+public class MaterialCreationWindow() : WindowBaseClass("Material Creation", true)
 {
     private string m_materialName = string.Empty, m_fragmentPath = string.Empty, m_vertexPath = string.Empty;
     private bool m_isLit;
@@ -19,9 +19,9 @@ public class MaterialCreationWindow() : FileManagedWindow("Material Creation", t
         ImGui.Separator();
         ImGui.InputText("Material name", ref m_materialName, ushort.MaxValue);
         ImGui.Separator();
-        if (InputFile("Fragment shader path", ref m_fragmentPath))
+        if (ImGuiFile.InputFile("Fragment shader path", ref m_fragmentPath))
             m_fragmentPath = Path.GetRelativePath(MainWindow.ProjectShadersFolder, m_fragmentPath);
-        if (InputFile("Vertex shader path", ref m_vertexPath))
+        if (ImGuiFile.InputFile("Vertex shader path", ref m_vertexPath))
             m_vertexPath = Path.GetRelativePath(MainWindow.ProjectShadersFolder, m_vertexPath);
         ImGui.Separator();
         ImGui.Checkbox("Is Lit?", ref m_isLit);

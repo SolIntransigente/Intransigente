@@ -11,6 +11,12 @@ public static class Cereal
         return Secretary.SaveContent(folder, file, jsonContent);
     }
 
+    public static bool SaveData<T>(T data, string path)
+    {
+        var jsonContent = JsonConvert.SerializeObject(data);
+        return Secretary.SaveContent(path, jsonContent);
+    }
+
     /// <summary>
     /// Finds and reads the file present in the path, then returns it casted into class (T)
     /// </summary>

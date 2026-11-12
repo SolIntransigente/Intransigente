@@ -1,9 +1,4 @@
-﻿using Dazed.Vitals.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dazed.Vitals
+﻿namespace Dazed.Vitals
 {
     /// <summary>
     /// All the common paths and file extensions that the game may use
@@ -34,6 +29,6 @@ namespace Dazed.Vitals
         public static string RelativeFontsFolder { get; } = Path.Combine(ResourcesFolderName, FontsFolderName);
         public static string RelativeMapFolder { get; } = Path.Combine(ResourcesFolderName, MapDataFolderName);
         public static string RelativeMaterialsFolder {get;} = Path.Combine(ResourcesFolderName, MaterialFolderName);
-        public static string MissingTexturePath { get; } = Path.Combine(ResourcesFolderName, "missingtexture.png");
+        public static string MissingTexturePath { get; } = Path.Combine(ResourcesFolderName, "missingtexture.jpg");
     }
 }

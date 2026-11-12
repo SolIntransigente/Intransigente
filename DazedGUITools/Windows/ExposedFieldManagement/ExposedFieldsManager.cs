@@ -12,7 +12,7 @@ using System.Reflection;
 namespace DazedGUITools.Windows.ExposedFieldManagement
 {
     [MainMenuWindow("Exposed fields manager")]
-    internal class ExposedFieldsManager : FileManagedWindow
+    internal class ExposedFieldsManager : WindowBaseClass
     {
         private string _filter = string.Empty;
 
@@ -100,7 +100,7 @@ namespace DazedGUITools.Windows.ExposedFieldManagement
             if (_values[i] == null)
                 _values[i] = string.Empty;
             string str = (string)_values[i]!;
-            if (InputFile(label, ref str))
+            if (ImGuiFile.InputFile(label, ref str))
             {
                 string nPath = Path.GetRelativePath(MainWindow.ProjectFolder, str);
                 _values[i] = nPath[0] == '.' && nPath[1] == '.' ? "PATH IS NOT RELATIVE TO PROJECT FOLDER" : nPath;
