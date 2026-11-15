@@ -34,6 +34,9 @@ namespace Dazed.Vitals.Rendering
         private float _height;
 
         public ImageDataType ImageDataType => _dataType;
+
+        public override TextureType TextureType => TextureType.Texture2D;
+
         private ImageDataType _dataType;
         private byte[] _pixelsBytes = null!;
 
@@ -49,7 +52,7 @@ namespace Dazed.Vitals.Rendering
             InstantiatedTextures.Add(identification, texture);
             return texture;
         }
-        public static Texture2D GetTextureInstance(string path) => GetTextureInstance(new TextureIdentification(path, ImageDataType.RGB));
+        public static Texture2D GetTextureInstance(string path) => GetTextureInstance(new TextureIdentification(path, ImageDataType.RGB, TextureType.Texture2D));
 
         internal Texture2D(string path, ImageDataType dataType, bool isReadOnly)
             : base(TextureTarget.Texture2D)

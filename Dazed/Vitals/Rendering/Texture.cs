@@ -7,6 +7,7 @@ namespace Dazed.Vitals.Rendering
 {
     public abstract class Texture : IDisposable
     {
+        public abstract TextureType TextureType {get;}
         public TextureTarget Target => target;
         readonly TextureTarget target;
         internal readonly int _textureHandle;
@@ -22,6 +23,15 @@ namespace Dazed.Vitals.Rendering
         public void Dispose()
         {
             GL.DeleteTexture(_textureHandle);
+        }
+
+        internal static Texture GetTextureFor(TextureIdentification identification)
+        {
+            return identification.TextureType switch
+            {
+                TextureType.Texture2D => new Texture2D(identification.Path, identification.ImageDataType, identification.IsReadOnly),
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }

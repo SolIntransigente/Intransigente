@@ -6,7 +6,6 @@ using Dazed.Vitals;
 using Dazed.Vitals.AssetReference;
 using Dazed.Vitals.Rendering;
 using ImGuiNET;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace DazedGUITools.Windows.BinExploration.FileInfoDrawing;
@@ -91,7 +90,7 @@ public class MaterialInfoDrawing : FileInfoDrawingGeneric<SerializedMaterialData
     public override void Initialize(string filePath)
     {
         m_typeToDrawMethod.Add(typeof(float), DrawFloat);
-        m_typeToDrawMethod.Add(typeof(AssetPath), DrawAssetPath);
+        m_typeToDrawMethod.Add(typeof(TexturePath), DrawTexturePath);
         m_typeToDrawMethod.Add(typeof(Vector2), DrawVector2);
         m_typeToDrawMethod.Add(typeof(Vector3), DrawVector3);
         m_typeToDrawMethod.Add(typeof(Vector4), DrawVector4);
@@ -175,15 +174,18 @@ public class MaterialInfoDrawing : FileInfoDrawingGeneric<SerializedMaterialData
         }
     }
 
-    private void DrawAssetPath(int index, out bool wasChanged)
+    private void DrawTexturePath(int index, out bool wasChanged)
     {
         try
         {
-            AssetPath aPath = CastToIfNecessary<AssetPath>(index);
-            string path = aPath.AssetRelativePath;
+            TexturePath tPath = CastToIfNecessary<TexturePath>(index);
+            string path = tPath.Identification.Path;
             wasChanged = ImGuiFile.InputFile(m_uniforms[index], ref path);
             if (wasChanged)
-                m_values[index] = new AssetPath(path);
+            {
+                path = Path.GetRelativePath(MainWindow.ProjectFolder, path);
+                m_values[index] = new TexturePath(new (path, tPath.Identification.ImageDataType, tPath.Identification.TextureType, tPath.Identification.AlphaIsTransparency, tPath.Identification.IsReadOnly));
+            }
         }
         catch (InvalidCastException ex)
         {

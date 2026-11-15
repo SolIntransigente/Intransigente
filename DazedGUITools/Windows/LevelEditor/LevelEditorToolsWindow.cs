@@ -1,4 +1,8 @@
-﻿using DazedGUITools.Windows.LevelEditor.LevelEditorTools;
+﻿using System;
+using System.Linq;
+using Dazed.Vitals;
+using DazedGUITools.Windows.LevelEditor.LevelEditorTools;
+using DazedGUITools.Windows.LevelEditor.Representations;
 using ImGuiNET;
 
 namespace DazedGUITools.Windows.LevelEditor
@@ -10,12 +14,22 @@ namespace DazedGUITools.Windows.LevelEditor
 
         protected override void Draw()
         {
+            int[] ints = Input.GetPressedNumbers();
+            int pressedNumber = ints.Length == 0 ? 0 : ints.First();
+            int expectedNumber = 1;
+            if (ImGui.Button("Reload all geometry data"))
+                ReloadAllGeometry();
+            ImGui.Separator();
             //TODO: Replace with icons
-            //TODO: Find and list tools at startup
-            if (ImGui.Button("View"))
+            if (ImGui.Button("View") || pressedNumber == expectedNumber++)
                 LevelEditorContext.SetTool(new ViewLETool());
-            if (ImGui.Button("Translate"))
+            if (ImGui.Button("Translate") || pressedNumber == expectedNumber++)
                 LevelEditorContext.SetTool(new TranslateLETool());
+        }
+
+        private void ReloadAllGeometry()
+        {
+            GeometryRepresentation.CallReloadAll(this);
         }
     }
 }

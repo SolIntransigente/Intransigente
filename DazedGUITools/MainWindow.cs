@@ -119,6 +119,8 @@ namespace DazedGUITools
 
             SetUpImguiStyle();
             _startUpWindow = new();
+            Width = base.Size.X;
+            Height = base.Size.Y;
             Artist.SetResolution(Width, Height);
         }
 

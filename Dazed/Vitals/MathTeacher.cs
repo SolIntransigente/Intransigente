@@ -2,7 +2,9 @@
 using System.Runtime.CompilerServices;
 using OpenTK.Mathematics;
 using Quaternion = System.Numerics.Quaternion;
+using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
+using Vector4 = System.Numerics.Vector4;
 
 namespace Dazed.Vitals;
 
@@ -41,6 +43,7 @@ public static class MathTeacher
 
         return angles;
     }
+    public static Vector3 ToVector3(this Vector4 v) => new (v.X, v.Y, v.Z);
 
     public static Quaternion ToQuaternion(this Vector3 v) => Quaternion.CreateFromYawPitchRoll(v.Y * DegreesToRadians, v.X * DegreesToRadians, v.Z * DegreesToRadians);
 
@@ -54,11 +57,13 @@ public static class MathTeacher
     /// <param name="value"></param>
     /// <returns></returns>
     public static uint GetSafeUnsignedInteger(this int value) => value < 0 ? 0 : (uint)value;
-
     public static int GetNextBiggerRoundedNumber(this float value)
     {
         int rounded = Convert.ToInt32(MathF.Round(value));
-        return value < rounded ? rounded - 1 : rounded;
+        if (value > 0)
+            return value < rounded ? rounded - 1 : rounded;
+        else
+            return value > rounded ? rounded + 1 : rounded;
     }
 
     public static uint GetNextBiggerRoundedUnsignedNumber(this float value)
@@ -107,6 +112,47 @@ public static class MathTeacher
         return !(value > max);
     }
 
+    public static SimpleRay UnProject(in Matrix4x4 projection, in Matrix4x4 view, int width, int height, Vector2 mouse)
+    {
+        Vector4 vec0, vec1;
+        vec0.X = vec1.X = 2.0f * mouse.X / (float)width - 1;
+        vec0.Y = vec1.Y  = -(2.0f * mouse.Y / (float)height - 1);
+        vec0.Z = 0;
+        vec1.Z = 1.0f;
+        vec0.W = vec1.W = 1.0f;
+        UnProjectInternal(projection, view, ref vec0);
+        UnProjectInternal(projection, view, ref vec1);
+
+        return new (vec0.ToVector3(), vec1.ToVector3());
+    }
+
+    private static void UnProjectInternal(Matrix4x4 projection, Matrix4x4 view, ref Vector4 vec)
+    {
+        Matrix4x4.Invert(view, out var viewInv);
+        Matrix4x4.Invert(projection, out var projInv);
+
+        vec = Vector4.Transform(vec, viewInv);
+        vec = Vector4.Transform(vec, projInv);
+
+        if (vec.W > 0.000001f || vec.W < -0.000001f)
+        {
+            vec.X /= vec.W;
+            vec.Y /= vec.W;
+            vec.Z /= vec.W;
+        }
+    }
+
     internal static OpenTK.Mathematics.Vector3 ToOpenTK(Vector3 v) => new(v.X, v.Y, v.Z);
+    internal static OpenTK.Mathematics.Vector3 ToOpenTK(object v)
+    {
+        Type type = v.GetType();
+        if (type == typeof(OpenTK.Mathematics.Vector3))
+            return (OpenTK.Mathematics.Vector3)v;
+        if (type !=  typeof(Vector3))
+            throw new InvalidCastException();
+        var val = (Vector3)v;
+        return new(val.X, val.Y, val.Z);
+    }
+
     internal static Vector3 ToNumerics(OpenTK.Mathematics.Vector3 v) => new(v.X, v.Y, v.Z);
 }

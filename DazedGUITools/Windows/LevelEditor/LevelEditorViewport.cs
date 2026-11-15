@@ -44,6 +44,7 @@ namespace DazedGUITools.Windows.LevelEditor
                 Close();
                 CloseWindows();
             }
+            ImGui.SameLine();
             if (ImGui.Button("Create quad"))
             {
                 Vector3 min = new(LevelEditorCamera.Position.X - 1, LevelEditorCamera.Position.Y - 1, LevelEditorCamera.Position.Z);
@@ -106,6 +107,9 @@ namespace DazedGUITools.Windows.LevelEditor
             }
             _rotX = MathF.Max(-89, MathF.Min(89, _rotX));
             LevelEditorCamera.SetEulerRotation(new(_rotX, _rotY, 0));
+        
+            if (Input.IsKeyDown(MouseButton.Left))
+                LevelEditorContext.TrySelectPlane();
         }
 
         private static void ProcessCommands()

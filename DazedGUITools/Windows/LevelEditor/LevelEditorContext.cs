@@ -1,6 +1,8 @@
 ﻿using Dazed.Vitals;
+using Dazed.Vitals.Rendering;
 using DazedGUITools.Windows.LevelEditor.LevelEditorTools;
 using DazedGUITools.Windows.LevelEditor.Representations;
+using ImGuiNET;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -204,6 +206,16 @@ namespace DazedGUITools.Windows.LevelEditor
             if (SelectedGeometry == null)
                 return null;
             return SelectedGeometry.VertexAt(SelectedVertexIndex);
+        }
+
+        internal static void TrySelectPlane()
+        {
+            var v1 = Input.MousePosition;
+            var v2 = ImGui.GetWindowPos();
+            float x = v1.X - v2.X;
+            float y = v1.Y - v2.Y;
+            var pos = new Vector2(x * Artist.NormalizedWidth, y * Artist.NormalizedHeight);
+            SimpleRay unProjected = MathTeacher.UnProject(LevelEditorCamera.Projection, LevelEditorCamera.View, Width, Height, pos);
         }
     }
 }

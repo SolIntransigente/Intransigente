@@ -1,1 +1,1 @@
-{"f":["DazedInstance|defaultFont","DazedInstance|playerMesh","DazedInstance|testSound","Artist|missing texture path"],"d":["resources\\fonts\\DefaultFont.fd","resources\\Angor.fbx","resources\\music\\SanMartin\\Lended up hope.mp3","resources\\missingtexture.jpg"]}
+{"f":["PlayerEntity|Player material data","PlayerEntity|Player mesh","ExceptionThrownMessage|defaultFont","Artist|missing texture path"],"d":["resources\\materials\\Default.material","resources\\Angor.fbx","resources\\DefaultFont.fd","resources\\missingtexture.jpg"]}

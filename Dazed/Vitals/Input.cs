@@ -58,5 +58,31 @@ namespace Dazed.Vitals
         
         public static bool KeyJustPressed(Keys key) => _kState.IsKeyPressed(key);
         public static bool KeyJustPressed(MouseButton button) => _mState.IsButtonPressed(button);
+
+        public static int[] GetPressedNumbers()
+        {
+            List<int> nums = new();
+            if (IsKeyDown(Keys.D1))
+                nums.Add(1);
+            if (IsKeyDown(Keys.D2))
+                nums.Add(2);
+            if (IsKeyDown(Keys.D3))
+                nums.Add(3);
+            if (IsKeyDown(Keys.D4))
+                nums.Add(4);
+            if (IsKeyDown(Keys.D5))
+                nums.Add(5);
+            if (IsKeyDown(Keys.D6))
+                nums.Add(6);
+            if (IsKeyDown(Keys.D7))
+                nums.Add(7);
+            if (IsKeyDown(Keys.D8))
+                nums.Add(8);
+            if (IsKeyDown(Keys.D9))
+                nums.Add(9);
+            if (IsKeyDown(Keys.D0))
+                nums.Add(0);
+            return [.. nums];
+        }
     }
 }

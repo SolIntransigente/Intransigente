@@ -1,0 +1,1 @@
+{"n":"Default","fs":"default","vs":"default","l":true,"u":[{"n":"mainTex","t":"TexturePath","v":{"i":{"p":"resources\\missingtexture.jpg","dt":0,"tt":"Texture2D","a":true,"r":true}}},{"n":"objectColor","t":"Vector3","v":{"X":1.0,"Y":1.0,"Z":1.0}}]}

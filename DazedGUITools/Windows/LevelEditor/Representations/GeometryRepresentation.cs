@@ -3,6 +3,7 @@ using Dazed.Vitals.Rendering;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 
 namespace DazedGUITools.Windows.LevelEditor.Representations
@@ -20,6 +21,64 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
 
         public string m_materialPath; 
         private Material GeometryMaterial;
+
+        private bool m_destroyed;
+        private static event Action? OnMaterialReload;
+
+        public bool FlipTextureCoordinateX
+        {
+            get => m_flipX;
+            set
+            {
+                m_flipX = value;
+                UpdateTextureCoordinates();
+            }
+        }
+
+        public bool FlipTextureCoordinateY
+        {
+            get => m_flipY;
+            set
+            {
+                m_flipY = value;
+                UpdateTextureCoordinates();
+            }
+        }
+
+        public bool UseZToYTextureCoordinate
+        {
+            get => m_useZtoY;
+            set
+            {
+                m_useZtoY = value;
+                UpdateTextureCoordinates();
+            }
+        }
+        public bool UseZToXTextureCoordinate
+        {
+            get => m_useZtoX;
+            set
+            {
+                m_useZtoX = value;
+                UpdateTextureCoordinates();
+            }
+        }
+
+        private bool m_useZtoY, m_useZtoX;
+
+        private void UpdateTextureCoordinates()
+        {
+            for (int i = 0; i < VertexCount; i++)
+            {
+                m_vertData[i].m_flipX = m_flipX;
+                m_vertData[i].m_flipY = m_flipY;
+                m_vertData[i].m_useZtoY = m_useZtoY;
+                m_vertData[i].m_useZtoX = m_useZtoX;
+            }
+            UpdateData();
+        }
+
+        private bool m_flipX, m_flipY;
 
         /// <summary>
         /// Constructs a quad geometry by taking the max and min vertex - Order doesn't matter
@@ -54,8 +113,51 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             ParentedSection = LevelEditorContext.CurrentlySelectedSection;
             m_materialPath = Path.Combine(MainWindow.ProjectResourcesFolder, CommonPaths.MaterialFolderName);
             m_materialPath = Path.Combine(m_materialPath, "default" + CommonPaths.MaterialExtension);
-            GeometryMaterial = Material.GetMaterialInstance(m_materialPath);
+            bool trySet = TrySetMaterial(m_materialPath, out string msg);
+            if (!trySet)
+            {
+                Scriptorium.Warn(msg);
+            }
             UpdateData();
+            OnMaterialReload += ReloadMaterial;
+        }
+
+        public static void CallReloadAll(object? source)
+        {
+            bool hadException = false;
+            try
+            {
+                OnMaterialReload?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                hadException = true;
+                Scriptorium.LogException(ex);
+            }
+            if(DebugState.DebugMedium || hadException)
+                Scriptorium.Message("From object source: " + (source == null ? "null" : source.ToString()));
+        }
+
+        private void ReloadMaterial()
+        {
+            if (!TrySetMaterial(m_materialPath, out string msg))
+                Scriptorium.Warn(msg);
+        }
+
+        public void Destroy()
+        {
+            if (m_destroyed)
+                return;
+            m_destroyed = true;
+            OnMaterialReload -= ReloadMaterial;
+            FreeBuffers();
+        }
+
+        private void FreeBuffers()
+        {
+            GL.DeleteBuffer(_vertexBufferObject);
+            GL.DeleteBuffer(_vertexArrayObject);
+            GL.DeleteBuffer(_elementBufferObject);
         }
 
         private void UpdateData()
@@ -116,6 +218,8 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 m_center += m_vertData[i].Position;
 
             m_center /= m_vertData.Length;
+            for (int i = 0; i < m_vertData.Length; i++)
+                m_vertData[i].Center = m_center;
 
             var v0 = m_vertData[0].Position;
             var v1 = m_vertData[1].Position;
@@ -219,6 +323,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             }
             try 
             { 
+                Material.TryRemoveInstance(GeometryMaterial);
                 var matInstance = Material.GetMaterialInstance(data);
                 GeometryMaterial = matInstance;
             }
@@ -228,11 +333,29 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 return false;
             }
             m_materialPath = path;
+            GeometryMaterial.ReloadAllParameters(true);
+            TrySetLightData();
             return true;
+        }
+
+        private void TrySetLightData()
+        {
+            GeometryMaterial.TrySetVector3("ambientColor", Vector3.One);
         }
 
         internal void ForceUpdate()
         {
+            if (DebugState.DebugMedium) Scriptorium.Warn("Forced to update");
+            UpdateData();
+        }
+
+        internal void SwapZParenting()
+        {
+            for(int i = 0; i < VertexCount; i++)
+                if (m_vertData[i].IsAbsoluteVertex)
+                    continue;
+                else
+                    m_vertData[i].Flag.useZ0 = !m_vertData[i].Flag.useZ0; 
             UpdateData();
         }
     }

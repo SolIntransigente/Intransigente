@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using OpenTK.Mathematics;
+using System.Numerics;
 
 namespace Dazed.Vitals.Rendering
 {
@@ -18,10 +18,22 @@ namespace Dazed.Vitals.Rendering
         private static readonly List<Material> InstancedMaterials = [];
 
         public static Material MissingMaterial{get; private set;} = null!;
+        public string ShaderIdentification { get; private set; }
+
         internal static void CreateMissingMaterial(Shader shader, Texture2D texture)
         {
             MissingMaterial = new Material(shader);
             MissingMaterial.SetMainTexture(texture);
+        }
+
+        public static void TryRemoveInstance(Material matInstance)
+        {
+            if (matInstance == null)
+                return;
+            if (!Indexes.ContainsKey(matInstance.ShaderIdentification))
+                return;
+            Indexes.Remove(matInstance.ShaderIdentification);
+            InstancedMaterials.Remove(matInstance);   
         }
 
         public static Material GetMaterialInstance(Shader matShader, bool litMaterial = false, bool forceNewInstance = false)
@@ -37,7 +49,6 @@ namespace Dazed.Vitals.Rendering
         }
 
         public static Material GetMaterialInstance(string pathToMaterialData, bool forceNewInstance = false) => GetMaterialInstance(Cereal.LoadData<SerializedMaterialData>(pathToMaterialData), forceNewInstance);
-
         public static Material GetMaterialInstance(SerializedMaterialData data, bool forceNewInstance = false)
         {
             if (!forceNewInstance)
@@ -46,6 +57,7 @@ namespace Dazed.Vitals.Rendering
             Material? m = null;
             m = new Material(Shader.GetNewShaderInstance(data.VertexShaderRelativePath, data.FragmentShaderRelativePath), data.MaterialName, data.IsLit);
             m.SetData(data);
+            m.ShaderIdentification = data.ShaderIdentification;
             Indexes.Add(data.ShaderIdentification, InstancedMaterials.Count);
             InstancedMaterials.Add(m);
             return m;
@@ -72,133 +84,222 @@ namespace Dazed.Vitals.Rendering
             Type uniformType = Shader.GetTypeFor(typeName);
             if (uniformValue.GetType() == typeof(JObject))
             {
-                return ((JObject)uniformValue).ToObject(uniformType);
+                object? v = ((JObject)uniformValue).ToObject(uniformType);
+                if (uniformType == typeof(TexturePath))
+                {
+                    SetMainTexture((Texture2D?)ProcessAsTexture(v));
+                    return null;
+                }
+                return v;
             }
             else return uniformValue;
         }
 
+        private Texture? ProcessAsTexture(object? v)
+        {
+            if (v == null)
+                return null;
+            try
+            {
+                TexturePath tPath = (TexturePath)v;
+                return Texture.GetTextureFor(tPath.Identification);
+            }
+            catch (Exception ex)
+            {
+                Scriptorium.LogException(ex);
+                return null;
+            }
+        }
+
         public void UseMaterial()
         {
-            UpdateShaderParameters(true);
+            m_shader.Use();
+            UpdateShaderParameters(false);
             m_mainTexture?.Use(OpenTK.Graphics.OpenGL.TextureUnit.Texture0);
         }
 
-        public void SetMainTexture(Texture2D texture)
+        public void SetMainTexture(Texture2D? texture)
         {
-            m_mainTexture = texture;
+            m_mainTexture = texture ?? Artist.MissingTexture;
         }
 
         public void SetFloat(string name, float value)
         {
             try
             {
-                SetValue(name, value);
-                OnParameterChange?.Invoke(ParameterLocation(name));
+                SetValueInternal(name, value);
             }
             catch (Exception ex)
             {
                 Scriptorium.LogException(ex);
             }
+        }
+        public void TrySetFloat(string name, float value)
+        {
+            try
+            {
+                SetValueInternal(name, value);
+            }
+            catch {return;}
         }
 
         public void SetVector2(string name, Vector2 value)
         {
             try
             {
-                SetValue(name, value);
-                OnParameterChange?.Invoke(ParameterLocation(name));
+                SetValueInternal(name, value);
             }
             catch (Exception ex)
             {
                 Scriptorium.LogException(ex);
             }
         }
-
-        public void internalSetVector3(string name, System.Numerics.Vector3 value)
+        public void TrySetVector2(string name, Vector2 value)
         {
             try
             {
-                SetValue(name, value);
-                OnParameterChange?.Invoke(ParameterLocation(name));
+                SetValueInternal(name, value);
+            }
+            catch {return;}
+        }
+
+        public void SetVector3(string name, Vector3 value)
+        {
+            try
+            {
+                SetValueInternal(name, value);
             }
             catch (Exception ex)
             {
                 Scriptorium.LogException(ex);
             }
         }
-        public void SetVector3(string name, System.Numerics.Vector3 value) => internalSetVector3(name, value);
+        public void TrySetVector3(string name, Vector3 value)
+        {
+            try
+            {
+                SetValueInternal(name, value);
+            }
+            catch
+            {return;}
+        }
         public void SetVector4(string name, Vector4 value)
         {
             try
             {
-                SetValue(name, value);
-                OnParameterChange?.Invoke(ParameterLocation(name));
+                SetValueInternal(name, value);
             }
             catch (Exception ex)
             {
                 Scriptorium.LogException(ex);
             }
         }
-        public void SetVector4(string name, System.Numerics.Vector4 value) => SetVector4(name, value);
-        public void SetVector4(string name, Color4 value)
+        public void SetVector4(string name, OpenTK.Mathematics.Color4 value)
         {
             try
             {
-                SetValue(name, value);
-                OnParameterChange?.Invoke(ParameterLocation(name));
+                SetValueInternal(name, value);
             }
             catch (Exception ex)
             {
                 Scriptorium.LogException(ex);
             }
         }
-        public void SetMatrix4(string name, Matrix4 value)
+        public void TrySetVector4(string name, OpenTK.Mathematics.Color4 value)
         {
             try
             {
-                SetValue(name, value);
-                OnParameterChange?.Invoke(ParameterLocation(name));
+                SetValueInternal(name, value);
+            }
+            catch {return;}
+        }
+        public void TrySetVector4(string name, Vector4 value)
+        {
+            try
+            {
+                SetValueInternal(name, value);
+            }
+            catch {return;}
+        }
+        public void SetVector4n(string name, System.Numerics.Vector4 value) => SetVector4(name, (Vector4)value);
+        public void TrySetVector4n(string name, System.Numerics.Vector4 value) => TrySetVector4(name, (Vector4)value);
+
+        public void SetMatrix4(string name, Matrix4x4 value)
+        {
+            try
+            {
+                SetValueInternal(name, value);
             }
             catch (Exception ex)
             {
                 Scriptorium.LogException(ex);
             }
         }
-        public void SetMatrix4(string name, System.Numerics.Matrix4x4 value) => SetMatrix4(name, (Matrix4)value);
+        public void TrySetMatrix4(string name, Matrix4x4 value)
+        {
+            try
+            {
+                SetValueInternal(name, value);
+            }
+            catch {return;}
+        }
         public void SetBool(string name, bool value)
         {
             try
             {
-                SetValue(name, value);
-                OnParameterChange?.Invoke(ParameterLocation(name));
+                SetValueInternal(name, value);
             }
             catch (Exception ex)
             {
                 Scriptorium.LogException(ex);
             }
         }
-
-        private void UpdateShaderParameters()
+        public void TrySetBool(string name, bool value)
         {
-            m_params.Clear();
-            m_keyToIndex.Clear();
-            GetUniformsFromShader();
-            UpdateShaderParameters(true);
+            if (DebugState.DebugFull)
+            {
+                SetBool(name, value);
+                return;
+            }
+            try
+            {
+                SetValueInternal(name, value);
+            }
+            catch{return;}
         }
 
-        private void UpdateShaderParameters(bool forceReload = false)
+        private void SetValueInternal<T>(string name, T value) where T : struct
         {
-            for(int i = 0; i < m_params.Count; i++)
+            SetValue<T>(name, value);
+            OnParameterChange?.Invoke(ParameterLocation(name));
+        }
+
+        private void UpdateShaderParameters(bool forceAll)
+        {
+            for (int i = 0; i < m_params.Count; i++)
             {
-                if (!forceReload && !m_params[i].Changed)
+                if (!forceAll && !m_params[i].Changed)
                     continue;
                 m_shader.SetInterpretedValue(m_params[i].Name, m_params[i].Value);
                 m_params[i].UnflagChange();
             }
         }
 
+        private void ReloadAllParameters() => ReloadAllParameters(true);
+
+        public void ReloadAllParameters(bool reloadAllParameters = false)
+        {
+            m_params.Clear();
+            m_keyToIndex.Clear();
+            GetUniformsFromShader();
+            UpdateShaderParameters(reloadAllParameters);
+        }
+
         private int ParameterLocation(string name) => m_keyToIndex[name];
-        private void SetValue<T>(string name, T value) where T : struct => m_params[ParameterLocation(name)].SetValue(value);
+        private void SetValue<T>(string name, T value) where T : struct
+        {
+            m_params[ParameterLocation(name)].SetValue(value);
+        }
 
         private Material(Shader shader, string? identifier = null, bool isLit = false)
         {
@@ -206,7 +307,7 @@ namespace Dazed.Vitals.Rendering
             m_identifier = identifier ?? "UNDEFINED MATERIAL";
             if (isLit)
                 Artist.AddLitMaterial(this);
-            Shader.AfterShaderReload += UpdateShaderParameters;
+            Shader.AfterShaderReload += ReloadAllParameters;
             GetUniformsFromShader();
         }
 

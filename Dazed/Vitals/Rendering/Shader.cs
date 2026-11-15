@@ -1,9 +1,7 @@
-﻿using System.Numerics;
-using Dazed.Vitals.AssetReference;
+﻿using Dazed.Vitals.AssetReference;
 using Dazed.Vitals.FileHandling;
 using OpenTK.Graphics.OpenGL;
-using Vector2 = System.Numerics.Vector2;
-using Vector3 = System.Numerics.Vector3;
+using System.Numerics;
 
 namespace Dazed.Vitals.Rendering
 {
@@ -29,7 +27,7 @@ namespace Dazed.Vitals.Rendering
             LiteralTypeToType.Add("vec2", typeof(Vector2));
             LiteralTypeToType.Add("float", typeof(float));
             LiteralTypeToType.Add("bool", typeof(bool));
-            LiteralTypeToType.Add("sampler2D", typeof(AssetPath));
+            LiteralTypeToType.Add("sampler2D", typeof(TexturePath));
 
             TypeNameToType = [];
             TypeNameToType.Add(typeof(Vector4).Name, typeof(Vector4));
@@ -37,7 +35,7 @@ namespace Dazed.Vitals.Rendering
             TypeNameToType.Add(typeof(Vector2).Name, typeof(Vector2));
             TypeNameToType.Add(typeof(float).Name, typeof(float));
             TypeNameToType.Add(typeof(bool).Name, typeof(bool));
-            TypeNameToType.Add(typeof(AssetPath).Name, typeof(AssetPath));
+            TypeNameToType.Add(typeof(TexturePath).Name, typeof(TexturePath));
         }
 
         public static Shader GetNewShaderInstance(string path, bool pathIsAbsolute = false)
@@ -91,7 +89,7 @@ namespace Dazed.Vitals.Rendering
             ValueAssignments.Add(typeof(Vector3), SetVector3);
             ValueAssignments.Add(typeof(Vector4), SetVector4);
             ValueAssignments.Add(typeof(OpenTK.Mathematics.Color4), SetColor4);
-            ValueAssignments.Add(typeof(OpenTK.Mathematics.Matrix4), SetMatrix4);
+            ValueAssignments.Add(typeof(Matrix4x4), SetMatrix4);
             ValueAssignments.Add(typeof(bool), SetBool);
         }
 
@@ -234,7 +232,7 @@ namespace Dazed.Vitals.Rendering
         internal void SetVector3(string name, object vector3)
         {
             Use();
-            GL.Uniform3(_uniformLocations[name], MathTeacher.ToOpenTK((Vector3)vector3));
+            GL.Uniform3(_uniformLocations[name], MathTeacher.ToOpenTK(vector3));
         }
 
         internal void SetVector2(string name, object vector2)
@@ -271,7 +269,7 @@ namespace Dazed.Vitals.Rendering
                 return;
             }
             Type type = value.GetType();
-            if(ValueAssignments.TryGetValue(type, out var assignment))
+            if (ValueAssignments.TryGetValue(type, out var assignment))
             {
                 assignment(name, value);
                 return;

@@ -50,7 +50,7 @@ namespace Dazed.Vitals
             //No testing for file existence, as to ensure the game throws an exception in case of the font not existing
             FontData data = Cereal.LoadData<FontData>(fontDataPath);
 
-            FontTexture = Texture2D.GetTextureInstance(new TextureIdentification(data.TextureRelativePath, ImageDataType.RGBA, true));
+            FontTexture = Texture2D.GetTextureInstance(new TextureIdentification(data.TextureRelativePath, ImageDataType.RGBA, TextureType.Texture2D, true));
             var charWidth = data.CharWidth;
             var charHeight = data.CharHeight;
             _isUppercaseOnly = data.IsUpperCaseOnly;

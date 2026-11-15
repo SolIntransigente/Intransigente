@@ -34,16 +34,43 @@ internal class LevelEditorGeometryWindow() : WindowBaseClass("Geometry propertie
             if (!sGeom.TrySetMaterial(m_tempPath, out string mesage))
                 m_materialSetState = (true, mesage);
         Representations.VertexData sVertex = sGeom.VertexAt(LevelEditorContext.SelectedVertexIndex);
-        if (!sVertex.IsAbsoluteVertex) 
+        ImGui.Separator();
+        DrawVertexData(sGeom, sVertex);
+        
+    }
+
+    private static void DrawVertexData(GeometryRepresentation sGeom, VertexData sVertex)
+    {
+        if (ImGui.Button("Swap Z parenting"))
         {
-            ImGui.Separator();
-            // if (ImGui.Checkbox("First parent X", ref sVertex.Flag.useX0))
-            //     sGeom.ForceUpdate();
-            // if (ImGui.Checkbox("First parent Y", ref sVertex.Flag.useY0))
-            //     sGeom.ForceUpdate();
-            if (ImGui.Checkbox("Which vertex Z", ref sVertex.Flag.useZ0))
-                sGeom.ForceUpdate();
-            ImGui.Text("Whether it should use the Z coordinate of the first vertex it references or the other");
+            sGeom.SwapZParenting();
+        }
+        // if (!sVertex.IsAbsoluteVertex)
+        // {
+        //     if (ImGui.Checkbox("Which vertex Z", ref sVertex.Flag.useZ0))
+        //         sGeom.ForceUpdate();
+        //     ImGui.Text("Whether it should use the Z coordinate of the first vertex it references or the other");
+        //     ImGui.Separator();
+        // }
+        bool useZToY = sGeom.UseZToYTextureCoordinate;
+        if (ImGui.Checkbox("Use Z for texture coordinate Y", ref useZToY))
+        {
+            sGeom.UseZToYTextureCoordinate = useZToY;
+        }
+        bool useZToX = sGeom.UseZToXTextureCoordinate;
+        if (ImGui.Checkbox("Use Z for texture coordinate X", ref useZToX))
+        {
+            sGeom.UseZToXTextureCoordinate = useZToX;
+        }
+        bool flipX = sGeom.FlipTextureCoordinateX;
+        if (ImGui.Checkbox("Flip X texture coordinate", ref flipX))
+        {
+            sGeom.FlipTextureCoordinateX = flipX;
+        }
+        bool flipY = sGeom.FlipTextureCoordinateY;
+        if (ImGui.Checkbox("Flip Y texture coordinate", ref flipY))
+        {
+            sGeom.FlipTextureCoordinateY = flipY;
         }
     }
 }

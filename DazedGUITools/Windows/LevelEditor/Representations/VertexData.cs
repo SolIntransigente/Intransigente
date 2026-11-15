@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using Dazed.Vitals;
 
 namespace DazedGUITools.Windows.LevelEditor.Representations
 {
@@ -14,7 +15,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             get
             {
                 if (ParentedVertices == null)
-                    return _pos;
+                    return m_pos;
                 else
                 {
                     Vector3 value = new();
@@ -37,7 +38,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             {
                 if(ParentedVertices == null)
                 {
-                    _pos = value;
+                    m_pos = value;
                 }
                 else
                 {
@@ -56,23 +57,32 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         }
         public Vector3 Normal
         {
-            get => ParentedVertices == null ? _normal : v0.Normal;
+            get => ParentedVertices == null ? m_normal : v0.Normal;
             internal set
             {
                 if (ParentedVertices != null)
                     return;
-                _normal = value;
+                m_normal = value;
             }
         }
-        private Vector3 _normal;
-        private Vector3 _pos;
+
+        internal bool m_useZtoY, m_useZtoX;
+
+        private Vector2 m_overwrittenTexCoord;
+        private bool m_overwriteTexCoord;
+
+        internal bool m_flipX, m_flipY;
+
+        private Vector3 m_normal;
+        private Vector3 m_pos;
+        public Vector3 Center {get; set;}
         public VertexReferenceFlags Flag;
         private readonly VertexData[]? ParentedVertices;
         private VertexData v0 => ParentedVertices![0];
         private VertexData v1 => ParentedVertices![1];
         public VertexData(Vector3 position/*, Vector3 normal, Vector3[] otherTwoVertex*/)
         {
-            _pos = Vector3.Round(position);
+            m_pos = Vector3.Round(position);
             IsAbsoluteVertex = true;
             //_normal = normal;
         }
@@ -88,17 +98,23 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         {
             float[] texCoordinates = new float[2];
             Vector3 pos = Position;
-            var c1 = new Vector2(pos.Y, pos.Z);
-            var c2 = new Vector2(pos.X, pos.Z);
-            var c3 = new Vector2(pos.X, pos.Y);
+            // var pX = pos.X - Center.X;
+            // var pY = pos.Y - Center.Y;
+            // var pZ = pos.Z - Center.Z;
+            // if (!MathTeacher.Within(-1, pX, 1))
+            //     pX -= pX.GetNextBiggerRoundedNumber();
+            // if (!MathTeacher.Within(-1, pZ, 1))
+            //     pZ -= pZ.GetNextBiggerRoundedNumber();
+            // var lY = MathF.Asin(pZ);
+            // var lX = MathF.Acos(pZ);
 
-            var alpha21 = MathF.Abs(Normal.X);
-            var alpha23 = MathF.Abs(Normal.Z);
+            // var y = float.Lerp(pos.Y, pos.Z, lY);
+            // var x = float.Lerp(pos.X, pos.Z, lX);
 
-            var c21 = Vector2.Lerp(c2, c1, alpha21);
-            var c23 = Vector2.Lerp(c21, c3, alpha23);
-            texCoordinates[0] = 1 - c23.X;
-            texCoordinates[1] = 1 - c23.Y;
+            float texCoordX = m_useZtoX ? pos.Z : -pos.X;
+            float texCoordY = m_useZtoY ? pos.Z : pos.Y;
+            texCoordinates[0] = texCoordX * (m_flipX ? -1 : 1);
+            texCoordinates[1] = texCoordY * (m_flipY ? -1 : 1);
             return texCoordinates;
         }
 

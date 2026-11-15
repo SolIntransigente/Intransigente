@@ -65,6 +65,7 @@ public class MaterialCreationWindow() : WindowBaseClass("Material Creation", tru
         {
             Scriptorium.LogException(ex);
             m_result = false;
+            m_resultMessage = ex.Message;
         }
     }
 
