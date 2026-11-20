@@ -11,6 +11,7 @@ internal class FramesDataHandler : IDisposable
 
     private int m_currentIndex = 0;
     private uint m_currentAge;
+    private bool m_disposed;
 
     private Dictionary<int, int> m_frameOrder;
 
@@ -40,6 +41,11 @@ internal class FramesDataHandler : IDisposable
 
     public void SetFrameData(int usedFrameIndex)
     {
+        if (m_disposed)
+        {
+            Scriptorium.Error("A frame handler is being called whilst it has already been disposed");
+            return;
+        }
         if(m_frameOrder.TryGetValue(usedFrameIndex, out int realIndex))
         {
             if(m_lastSetFrame == usedFrameIndex)
@@ -51,7 +57,7 @@ internal class FramesDataHandler : IDisposable
                     continue;
                 else if(m_framesAge[i] < m_framesAge[realIndex])
                     m_occupiedFrames[i] = false;
-            Scriptorium.Warn("Setting: " + usedFrameIndex + " at: " + realIndex);
+            // Scriptorium.Warn("Setting: " + usedFrameIndex + " at: " + realIndex);
             FrameTextureHandle = m_handle;
             GL.BindTexture(TextureTarget.Texture2D, FrameTextureHandle);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R3G3B2, m_width, m_height, 0, PixelFormat.Bgr, PixelType.UnsignedByte, m_frames[realIndex]);
@@ -67,6 +73,11 @@ internal class FramesDataHandler : IDisposable
 
     public void AddFrame(in byte[] data)
     {
+        if (m_disposed)
+        {
+            Scriptorium.Error("A disposed frame handler is receiving new frames");
+            return;
+        }
         for(int i = 0; i < m_frames.Length; i++)
         {
             if (m_occupiedFrames[i])
@@ -105,6 +116,10 @@ internal class FramesDataHandler : IDisposable
 
     public void Dispose()
     {
+        if (m_disposed)
+            return;
+        m_disposed = true;
         GL.DeleteTexture(FrameTextureHandle);
+        GC.Collect();
     }
 }

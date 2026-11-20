@@ -5,31 +5,31 @@ using System.Text;
 
 namespace Dazed.Vitals
 {
-    internal static class SplashScreen
+    internal class SplashScreen
     {
         private const string SplashScreenVideoName = "splashScreen.mp4";
-        private static VideoPlayer _video;
-        public static bool Ended { get; private set; }
-        public static event Action? OnEndReached;
+        private VideoPlayer? m_video;
+        public bool Disposed { get; private set; }
+        public event Action? OnEndReached;
 
-        public static void InitializeSplashScreen()
+        public SplashScreen()
         {
-            if (Ended) return;
-            _video = new(PathUtils.BaseDirectoryCombine(SplashScreenVideoName));
-            _video.VideoEndReached += EndSplashScreen;
+            m_video = new(PathUtils.BaseDirectoryCombine(SplashScreenVideoName));
+            m_video.VideoEndReached += EndSplashScreen;
         }
 
-        private static void EndSplashScreen()
+        public void Start()
         {
-            if (Ended) return;
-            Ended = true;
-            _video.Dispose();
-            _video.VideoEndReached -= EndSplashScreen;
+            m_video!.Start();
+        }
+
+        private void EndSplashScreen()
+        {
+            if (Disposed) return;
+            Disposed = true;
+            m_video?.VideoEndReached -= EndSplashScreen;
+            m_video = null;
             OnEndReached?.Invoke();
-        }
-
-        internal static void Draw()
-        {
         }
     }
 }

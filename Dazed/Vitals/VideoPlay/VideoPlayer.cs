@@ -8,80 +8,89 @@ namespace Dazed.Vitals.VideoPlay
 {
     internal class VideoPlayer : Renderable
     {
-        private bool _disposed;
-        private readonly string _path;
-        private readonly VideoCapture _capture;
-        private readonly VideoAudio _audio;
-        private int _currentOffset;
-        // private readonly FrameData[] _framesData;
-        private readonly FramesDataHandler m_handler;
-        private readonly float _interval, _aspectRatio;
-        private readonly uint _frameCount, m_framesPerSecond;
+        private bool m_disposed;
+        private readonly string m_path;
+        private VideoCapture m_capture = null!;
+        private VideoAudio m_audio = null!;
+        private FramesDataHandler m_handler;
+        private float _interval, _aspectRatio;
+        private uint _frameCount, m_framesPerSecond;
         private int _currentFrame;
-        private readonly short _width, _height;
+        private short _width, _height;
 
         private short _dWidth, _dHeight;
         private short _dX, _dY;
 
-        private readonly Stopwatch _elapsedSinceUpdate;
+        private Stopwatch _elapsedSinceUpdate;
 
+        public readonly bool Loops;
+        private bool m_started;
         public override bool AllowRendering => IsVisible;
         public override RenderingPass RenderPass => RenderingPass.userInterface;
         public bool IsVisible { get; set; } = true;
 
         public event Action? VideoEndReached;
 
-        private readonly FullscreenRenderer _videoPlayerRenderer;
-        public VideoPlayer(string path)
+        private FullscreenRenderer _videoPlayerRenderer;
+        public VideoPlayer(string path, bool autoStart = false, bool loops = false)
         {
-            _capture = new VideoCapture(path);
-            _audio = new VideoAudio(path);
+            m_path = path;
+            Loops = loops;
+            if (autoStart)
+                Start();
+        }
+
+        public void Start()
+        {
+            if (m_started)
+                return;
+            m_started = true;
+            m_capture = new VideoCapture(m_path);
+            m_audio = new VideoAudio(m_path);
             //_audioPlayer = new(Options);
-            if (!_capture.IsOpened)
+            if (!m_capture.IsOpened)
                 throw new Exception("An error was found while assigning the video capture");
-            _path = path;
             _videoPlayerRenderer = new(QuadData.QuadShader);
             _elapsedSinceUpdate = new();
 
-            var fps = (byte)_capture.Get(CapProp.Fps);
+            var fps = (byte)m_capture.Get(CapProp.Fps);
             _interval = 1000f / fps;
             m_framesPerSecond = fps;
-            _frameCount = (uint)_capture.Get(CapProp.FrameCount);
-            _width = (short)_capture.Get(CapProp.FrameWidth);
-            _height = (short)_capture.Get(CapProp.FrameHeight);
+            _frameCount = (uint)m_capture.Get(CapProp.FrameCount);
+            _width = (short)m_capture.Get(CapProp.FrameWidth);
+            _height = (short)m_capture.Get(CapProp.FrameHeight);
             _aspectRatio = (float)_width / _height;
-            m_handler = new((int)_frameCount, _height, _width, (int) m_framesPerSecond);
+            m_handler = new((int)_frameCount, _height, _width, (int)m_framesPerSecond);
 
-            _capture.ImageGrabbed += ImageGrabbed;
+            m_capture.ImageGrabbed += ImageGrabbed;
             Artist.OnWidowResize += WidthHeightSetUp;
             Phone.SubscribeToApplicationQuit(OnQuit);
-            _capture.Start();
-            _audio.Start();
+            m_capture.Start();
+            m_audio.Start();
             WidthHeightSetUp();
         }
+
         private void OnQuit()
         {
-            _audio.Dispose();
+            m_audio.Dispose();
             Phone.UnSubscribeToApplicationQuit(OnQuit);
         }
-        private int m_latestSentIndex = 0;
         private void ImageGrabbed(object? sender, EventArgs e)
         {
             var mat = new Mat();
-            if (!_capture.Retrieve(mat))
+            if (!m_capture.Retrieve(mat))
                 throw new Exception("An error occurred while grabbing a new frame");
-            var thisIndex = m_latestSentIndex++;
             m_handler.AddFrame((byte[])mat.GetData(false));
         }
 
         public new void Dispose()
         {
-            if (_disposed)
+            if (m_disposed)
                 return;
+            m_disposed = true;
             base.Dispose();
-            _capture.Stop();
-            _capture.Dispose();
-            _disposed = true;
+            m_capture.Stop();
+            m_capture.Dispose();
             Artist.OnWidowResize -= WidthHeightSetUp;
             m_handler.Dispose();
         }
@@ -106,8 +115,21 @@ namespace Dazed.Vitals.VideoPlay
 
         public override void Render(in RenderingData data)
         {
-            if (_currentFrame + 1 >= _frameCount)
+            if (!m_started)
                 return;
+            if (_currentFrame + 1 >= _frameCount)
+            {
+                if (Loops)
+                {
+                    RestartFrameCatch();
+                    return;
+                }
+                if (m_disposed)
+                    return;
+                Dispose();
+                VideoEndReached?.Invoke();
+                return;
+            }
             if (!_elapsedSinceUpdate.IsRunning)
                 _elapsedSinceUpdate.Start();
 
@@ -116,6 +138,11 @@ namespace Dazed.Vitals.VideoPlay
             m_handler.SetFrameData(_currentFrame);
             _videoPlayerRenderer.Render(m_handler.FrameTextureHandle);
             GL.Viewport(0, 0, Artist.Width, Artist.Height);
+        }
+
+        private void RestartFrameCatch()
+        {
+            throw new NotImplementedException();
         }
     }
 }
