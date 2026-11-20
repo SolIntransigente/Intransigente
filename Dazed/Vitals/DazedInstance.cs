@@ -19,6 +19,8 @@ namespace Dazed.Vitals
 
         public static bool HasQuit { get; private set; }
 
+        private static SplashScreen SplashScreen;
+
         private readonly static KeyCombination _reloadShadersCombo = new(Keys.LeftControl, Keys.F8);
 
         public DazedInstance(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
@@ -27,6 +29,9 @@ namespace Dazed.Vitals
             ClientSize = MaximumSize.Value;
             AlwaysOnTop = false;
             IsContextRuntime = true;
+
+            SplashScreen = new();
+            SplashScreen.OnEndReached += EndSplashScreen;
         }
 
         protected override void OnLoad()
@@ -39,14 +44,11 @@ namespace Dazed.Vitals
             UpdateFrequency = CurrentMonitor.CurrentVideoMode.RefreshRate;
             VSync = VSyncMode.Adaptive;
 
-            SplashScreen.InitializeSplashScreen();
-            Phone.SubscribeToDrawCall(SplashScreen.Draw);
-            SplashScreen.OnEndReached += EndSplashScreen;
+            SplashScreen.Start();
         }
 
         private void EndSplashScreen()
         {
-            Phone.UnSubscribeToDrawCall(SplashScreen.Draw);
             SplashScreen.OnEndReached -= EndSplashScreen;
             //TODO: Load main menu / start of game
         }

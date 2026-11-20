@@ -8,7 +8,7 @@ namespace Dazed.Vitals
     internal class SplashScreen
     {
         private const string SplashScreenVideoName = "splashScreen.mp4";
-        private VideoPlayer? m_video;
+        private readonly VideoPlayer m_video;
         public bool Disposed { get; private set; }
         public event Action? OnEndReached;
 
@@ -20,15 +20,14 @@ namespace Dazed.Vitals
 
         public void Start()
         {
-            m_video!.Start();
+            m_video.Start();
         }
 
         private void EndSplashScreen()
         {
             if (Disposed) return;
             Disposed = true;
-            m_video?.VideoEndReached -= EndSplashScreen;
-            m_video = null;
+            m_video.VideoEndReached -= EndSplashScreen;
             OnEndReached?.Invoke();
         }
     }
