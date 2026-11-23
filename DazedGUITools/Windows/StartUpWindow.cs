@@ -25,7 +25,7 @@ namespace DazedGUITools.Windows
                 if(content == "")
                     return;
                 var settings = JsonConvert.DeserializeObject<string>(content);
-                ResultPath = settings;
+                ResultPath = settings!;
                 _foundConfig = true;
             }
         }

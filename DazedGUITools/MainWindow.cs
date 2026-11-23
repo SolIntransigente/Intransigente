@@ -122,6 +122,9 @@ namespace DazedGUITools
             Width = base.Size.X;
             Height = base.Size.Y;
             Artist.SetResolution(Width, Height);
+
+            UpdateFrequency = CurrentMonitor.CurrentVideoMode.RefreshRate;
+            VSync = VSyncMode.Adaptive;
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)

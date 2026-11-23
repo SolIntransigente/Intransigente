@@ -8,7 +8,7 @@ namespace Dazed.Vitals.Paisaje.Entities;
 [PaisajeElement("Base/Portal")]
 public class SectionPortal : Digemet, ICullableObject
 {
-    [PaisajeField]
+    [PaisajeExpose]
     private Vector3 min, max;
     
     public bool IsEnabled { get; set; } = true;

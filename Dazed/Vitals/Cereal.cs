@@ -31,6 +31,21 @@ public static class Cereal
         return JsonConvert.DeserializeObject<T>(json)!;
     }
 
+    public static T LoadDataOrSetDefault<T>(string path) where T : struct
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(path);
+        try
+        {
+            return LoadData<T>(path);
+        }
+        catch (Exception ex)
+        {
+            Scriptorium.LogException(ex);
+            Secretary.SaveContent(path: path, data: JsonConvert.SerializeObject(default(T)));
+            return default;
+        }
+    }
+
     /// <summary>
     /// Safely* loads the file present in the path set, then tries to return the object casted into (T)
     /// <br>*Safely, as it catches exceptions logs them in the console and then returns successful as true

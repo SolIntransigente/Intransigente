@@ -2,7 +2,7 @@
 
 namespace Dazed.Vitals.AssetReference
 {
-    public class AssetPath : IExposedElement
+    public struct AssetPath : IExposedElement
     {
         [JsonProperty("p")]
         public readonly string AssetRelativePath;
@@ -10,7 +10,7 @@ namespace Dazed.Vitals.AssetReference
         public override int GetHashCode() => AssetRelativePath.GetHashCode();
 
         public const string NoPathAssigned = "NO PATH ASSIGNED";
-        private AssetPath(){ AssetRelativePath = NoPathAssigned;}
+        public AssetPath(){ AssetRelativePath = NoPathAssigned;}
 
         public AssetPath(string fieldName, Type classType)
         {

@@ -14,7 +14,7 @@ namespace Dazed.Vitals.Rendering
 
         private static FullscreenRenderer _fullscreenRender = null!;
 
-        [ExposedField("missing texture path")]
+        [ExposedField("missing texture path", ".png | .jpg or any supported image format")]
         private static AssetPath _missingTexturePath;
         public static Texture2D MissingTexture { get; private set; }
 

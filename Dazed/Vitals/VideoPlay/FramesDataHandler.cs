@@ -120,6 +120,6 @@ internal class FramesDataHandler : IDisposable
             return;
         m_disposed = true;
         GL.DeleteTexture(FrameTextureHandle);
-        GC.Collect();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
     }
 }

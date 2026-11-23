@@ -11,7 +11,7 @@ namespace Dazed.Vitals
     {
         private string _messageContent;
         private GuiText _message;
-        [ExposedField("defaultFont")]
+        [ExposedField("defaultFont", ".fd (Font data)")]
         private static AssetPath fontAsset;
         private GuiButton _closeGameButton;
         public ExceptionThrownMessage(string message) : base(new(), new() { ClientSize = new(640, 480) })

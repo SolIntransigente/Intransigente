@@ -95,6 +95,25 @@ namespace Dazed.Vitals.FileHandling
             return wasSuccessful;
         }
 
+        internal static bool CreateNewFile(string path, bool crucialOperation = false)
+        {
+            try
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(path, nameof(path));
+                using var f = File.Create(path);
+                f.Dispose();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (crucialOperation)
+                    throw ex;
+                Scriptorium.Error("[SECRETARY] File creation operation failed with following exception: ");
+                Scriptorium.LogException(ex);
+            }
+            return false;
+        }
+
         private static bool CanUseFile(bool forceFileCreation, string filePath)
         {
             if (!File.Exists(filePath))

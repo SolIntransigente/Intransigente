@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Dazed.Vitals.FileHandling;
 
 namespace Dazed.Vitals.AssetReference
 {
@@ -8,15 +9,30 @@ namespace Dazed.Vitals.AssetReference
         public const BindingFlags ExposedFieldFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static;
         static ExposedData()
         {
+            FindData();
+        }
+
+        private static void FindData()
+        {
+            _data.Clear();
             var path = PathUtils.BaseDirectoryCombine(CommonPaths.ExposedDataFile);
-            var cast = Cereal.LoadData<ExposedDataArrays>(path);
+            if (!Path.Exists(path))
+                if (DazedInstance.IsContextRuntime)
+                    throw new Exception("No exposed data file found, make sure it hasn't been moved or deleted");
+                else
+                    Secretary.CreateNewFile(path, true);
+            var cast = Cereal.LoadDataOrSetDefault<ExposedDataArrays>(path);
+            if (cast.ClassAndField == null)
+                return;
             for (int i = 0; i < cast.ClassAndField.Length; i++)
                 _data.Add(cast.ClassAndField[i], cast.FieldData[i]);
         }
 
-        public static bool TryRetrieve(string formalFieldName, out object obj)
+        public static bool TryRetrieve(string formalFieldName, out object obj, bool forceFindData = false)
         {
-            obj = new();
+            if (forceFindData)
+                FindData();
+            obj = null!;
             try
             {
                 obj = _data[formalFieldName]!;

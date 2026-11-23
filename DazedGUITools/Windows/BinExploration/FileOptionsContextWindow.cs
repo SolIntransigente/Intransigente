@@ -25,6 +25,8 @@ namespace DazedGUITools.Windows.BinExploration
             {
                 if (DrawingFunction != null)
                     DrawingFunction.Initialize(Path.Combine(MainWindow.ProjectFolder, Path.Combine(_currentRelativePath, _fileName)));
+                else
+                    Close();
             }
             catch(Exception ex)
             {

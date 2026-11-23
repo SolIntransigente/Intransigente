@@ -10,5 +10,6 @@
         "Newtonsoft",
         "Paisaje",
         "Renderable"
-    ]
+    ],
+    "terminal.explorerKind": "external"
 }

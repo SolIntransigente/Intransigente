@@ -8,7 +8,7 @@ using System.Numerics;
 
 namespace DazedGUITools.Windows.LevelEditor.Representations
 {
-    internal class GeometryRepresentation
+    internal class GeometryRepresentation : IGeometryRepresentation
     {
         public SectionRepresentation ParentedSection {get; set;}
 
@@ -19,7 +19,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
         private Vector3 m_center;
         private readonly ushort[] m_indices;
 
-        public string m_materialPath; 
+        public string MaterialPath { get; set; } 
         private Material GeometryMaterial;
 
         private bool m_destroyed;
@@ -63,6 +63,8 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 UpdateTextureCoordinates();
             }
         }
+
+        public ObjectType ObjType => ObjectType.Geometry;
 
         private bool m_useZtoY, m_useZtoX;
 
@@ -111,9 +113,9 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             m_indices = indices;
             m_center = new();
             ParentedSection = LevelEditorContext.CurrentlySelectedSection;
-            m_materialPath = Path.Combine(MainWindow.ProjectResourcesFolder, CommonPaths.MaterialFolderName);
-            m_materialPath = Path.Combine(m_materialPath, "default" + CommonPaths.MaterialExtension);
-            bool trySet = TrySetMaterial(m_materialPath, out string msg);
+            MaterialPath = Path.Combine(MainWindow.ProjectResourcesFolder, CommonPaths.MaterialFolderName);
+            MaterialPath = Path.Combine(MaterialPath, "default" + CommonPaths.MaterialExtension);
+            bool trySet = TrySetMaterial(MaterialPath, out string msg);
             if (!trySet)
             {
                 Scriptorium.Warn(msg);
@@ -140,7 +142,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
 
         private void ReloadMaterial()
         {
-            if (!TrySetMaterial(m_materialPath, out string msg))
+            if (!TrySetMaterial(MaterialPath, out string msg))
                 Scriptorium.Warn(msg);
         }
 
@@ -251,7 +253,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             UpdateData();
         }
 
-        internal VertexData VertexAt(int index)
+        public VertexData VertexAt(int index)
         {
             ArgumentOutOfRangeException.ThrowIfGreaterThan(index, m_vertData.Length);
             ArgumentOutOfRangeException.ThrowIfNegative(index);
@@ -293,7 +295,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             UpdateData();
         }
 
-        internal void SetPosition(int index, Vector3 toPosition)
+        public void SetPosition(int index, Vector3 toPosition)
         {
             var vert = VertexAt(index);
             if (vert == null)
@@ -332,7 +334,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
                 message = ex.Message;
                 return false;
             }
-            m_materialPath = path;
+            MaterialPath = path;
             GeometryMaterial.ReloadAllParameters(true);
             TrySetLightData();
             return true;
@@ -349,7 +351,7 @@ namespace DazedGUITools.Windows.LevelEditor.Representations
             UpdateData();
         }
 
-        internal void SwapZParenting()
+        public void SwapZParenting()
         {
             for(int i = 0; i < VertexCount; i++)
                 if (m_vertData[i].IsAbsoluteVertex)

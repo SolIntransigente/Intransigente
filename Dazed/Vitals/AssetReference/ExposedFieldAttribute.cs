@@ -8,6 +8,12 @@
     public class ExposedFieldAttribute : Attribute
     {
         public readonly string FormalizedName;
+        public readonly string? ExpectedExtension;
+        public ExposedFieldAttribute(string name, string expectedExtension)
+        {
+            FormalizedName = name;
+            ExpectedExtension = expectedExtension;
+        }
         public ExposedFieldAttribute(string name)
         {
             FormalizedName = name;

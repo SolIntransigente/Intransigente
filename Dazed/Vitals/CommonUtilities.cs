@@ -1,25 +1,48 @@
-﻿using System.Numerics;
+﻿using System.Collections;
+using System.Numerics;
+using System.Reflection;
+using Dazed.Vitals.AssetReference;
 
 namespace Dazed.Vitals
 {
     public static class CommonUtilities
     {
-        public static string FirstCharToUpper(string input)
+        private static readonly Dictionary<Type, object> CommonDefaults = [];
+
+        static CommonUtilities()
         {
-            if (string.IsNullOrEmpty(input))
-                return "";
-            return input.First().ToString().ToUpper() + input.Substring(1);
+            CommonDefaults.Add(typeof(string), string.Empty);
+            CommonDefaults.Add(typeof(int), (int)0);
+            CommonDefaults.Add(typeof(uint), (uint)0);
+            CommonDefaults.Add(typeof(short), (short)0);
+            CommonDefaults.Add(typeof(ushort), (ushort)0);
+            CommonDefaults.Add(typeof(float), (float)0);
+            CommonDefaults.Add(typeof(Half), (Half)0);
+            CommonDefaults.Add(typeof(Vector2), Vector2.Zero);
+            CommonDefaults.Add(typeof(Vector3), Vector3.Zero);
+            CommonDefaults.Add(typeof(Vector4), Vector4.Zero);
+            CommonDefaults.Add(typeof(AssetPath), AssetPath.NoPathAssigned);
         }
 
-        public static string ApplyIndentation(this string input, int indentationAmount, bool asLines = false)
+        public static Type[] FindAllOfSubType(Type derivesFrom)
         {
-            string str = "";
-            for (int i = 0; i < indentationAmount; i++)
-                if (!asLines)
-                    str += "    ";
-                else
-                    str += "----";
-            return str + input;
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var types = assemblies.SelectMany(x => x.GetExportedTypes());
+            List<Type> selectedTypes = new();
+            foreach (var type in types)
+                if (!type.IsAbstract && !type.IsInterface && type.IsSubclassOf(derivesFrom))
+                    selectedTypes.Add(type);
+            return selectedTypes.ToArray();
+        }
+        public static Type[] FindAllOfInterfaceType(Type derivesFrom)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var types = assemblies.SelectMany(x => x.GetExportedTypes());
+            List<Type> selectedTypes = new();
+            foreach (var type in types)
+                if (!type.IsAbstract && type.GetInterface(derivesFrom.Name) != null)
+                    selectedTypes.Add(type);
+            return selectedTypes.ToArray();
         }
 
         public static Vector3 GetDirection(this Transform transform, ObjectDirection direction)
@@ -61,129 +84,19 @@ namespace Dazed.Vitals
             return default;
         }
 
-        public static float ToFloat(this string value)
+        /// <summary>
+        /// Returns the default value of a common struct (float, string, int, uint, short, ushort)
+        /// </summary>
+        /// <param name="type">The type to evaluate</param>
+        /// <returns>The default value for the struct</returns>
+        public static object GetDefaultOfStruct(Type type)
         {
-            char[] valueChars = value.ToCharArray();
-            float whole = 0;
-            float decimal_ = 0;
-            float currentDecimal = 0;
-            if (value.Contains('.') || value.Contains(','))
-                for (int c = valueChars.Length - 1; c >= 0; c--)
-                {
-                    char cha = valueChars[c];
-                    bool added = false;
-                    if (cha != '.' && !added)
-                    {
-                        currentDecimal -= 1;
-                        added = true;
-                    }
-                    if (cha != ',' && !added)
-                    {
-                        currentDecimal -= 1;
-                        added = true;
-                    }
-                    if (cha == '.' || cha == ',')
-                        break;
-                }
-            for (int i = valueChars.Length - 1; i >= 0; i--)
-            {
-                if (!char.IsNumber(valueChars[i]) && (valueChars[i] != '.' || valueChars[i] != ','))
-                    continue;
-                float num = (float)char.GetNumericValue(valueChars[i]);
-                if (currentDecimal < 0)
-                {
-                    currentDecimal += 1;
-                    decimal_ /= 10;
-                    decimal_ += num;
-                }
-                if (currentDecimal >= 0)
-                {
-                    whole += num * MathF.Pow(10, currentDecimal);
-                    currentDecimal += 1;
-                }
-            }
-            whole += decimal_;
-            return whole;
+            if (type.IsClass || type.IsInterface)
+                throw new ArgumentException("Type specified for getting its default must not be a class nor an interface, but a struct");
+            // ! If type is not included, then warn (throw exception)
+            return CommonDefaults[type];
         }
-        public static int ToInt(this string value)
-        {
-            char[] chars = value.ToCharArray();
-            int finalNum = 0;
-            bool isNegative = chars[0] == '-';
-            for (int i = 0; i < chars.Length; i++)
-                if (char.IsNumber(chars[i]))
-                {
-                    finalNum += (int)char.GetNumericValue(chars[i]);
-                    if (i != chars.Length - 1)
-                        finalNum *= 10;
-                }
-                else if (chars[i] == '.' || chars[i] == ',')
-                    break;
-            return finalNum * (isNegative ? -1 : 1);
-        }
-        public static Vector3 ToVector3(this string value)
-        {
-            char[] chars = value.ToLower().ToCharArray();
-            Vector3 result = new();
-            string tempNumString = "";
-            uint currentAxisIndex = 0;
-            for (int i = 0; i < chars.Length; i++)
-            {
-                if (chars[i] == ',')
-                    continue;
-                if (chars[i] == 'z' || currentAxisIndex == 3)
-                {
-                    currentAxisIndex = 3;
-                    if (chars[i] == 'z')
-                    {
-                        result.Y = tempNumString.ToFloat();
-                        tempNumString = "";
-                    }
-                    tempNumString += chars[i];
-                }
-                if (chars[i] == 'y' || currentAxisIndex == 2)
-                {
-                    currentAxisIndex = 2;
-                    if (chars[i] == 'y')
-                    {
-                        result.X = tempNumString.ToFloat();
-                        tempNumString = "";
-                    }
-                    tempNumString += chars[i];
-                }
-                if (chars[i] == 'x' || currentAxisIndex == 1)
-                {
-                    currentAxisIndex = 1;
-                    tempNumString += chars[i];
-                }
-            }
-            result.Z = tempNumString.ToFloat();
-            return result;
-        }
-        public static Vector3 FromStringToVector3(string value)
-        {
-            char[] chars = value.ToLower().ToCharArray();
-            Vector3 result = new();
-            string tempNumString = "";
-            uint currentAxisIndex = 0;
-            for (int i = 0; i < chars.Length; i++)
-            {
-                if (chars[i] == ',')
-                {
-                    if (currentAxisIndex == 0)
-                        result.X = tempNumString.ToFloat();
-                    else if (currentAxisIndex == 1)
-                        result.Y = tempNumString.ToFloat();
-                    currentAxisIndex += 1;
-                    tempNumString = "";
-                }
-                else if (chars[i] == ' ')
-                    continue;
-                else
-                    tempNumString += chars[i];
-            }
-            result.Z = tempNumString.ToFloat();
-            return result;
-        }
+
+        public static bool IsOfInterface(object evaluated, Type type) => evaluated.GetType().GetInterface(type.Name) != null;
     }
 }

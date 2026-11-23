@@ -1,4 +1,5 @@
 ﻿using Dazed.Vitals;
+using Dazed.Vitals.Paisaje;
 using Dazed.Vitals.Rendering;
 using DazedGUITools.Windows.LevelEditor.LevelEditorTools;
 using DazedGUITools.Windows.LevelEditor.Representations;
@@ -22,30 +23,35 @@ namespace DazedGUITools.Windows.LevelEditor
         private static short s_width = 1, s_height = 1;
 
         private static ILevelEditorTool s_currentTool = null!;
+        public static ILESelectableObject? CurrentObject { get; private set; }
         public static GeometryRepresentation? SelectedGeometry { get; private set; }
         public static int SelectedVertexIndex { get; private set; }
         private static int s_maximumVertexIndex;
 
-        //TOTAL geometry
-        // private static readonly GeometryRepresentation[] s_geometry = new GeometryRepresentation[4096];
         private static readonly List<SectionRepresentation> s_sections = new ();
         private static readonly Dictionary<SectionRepresentation, List<GeometryRepresentation>> s_sectionGeometry = new ();
         public static int GeometryCount { get; private set; }
 
         public static List<SectionRepresentation> AllSections => s_sections;
+        private static readonly List<IDynamicRepresentation> allDynamic = [];
 
         public static SectionRepresentation CurrentlySelectedSection => s_currentSection;
 
+        public readonly static Type[] PaisajeObjectTypes;
+
         private readonly static VertexHighlight s_vertexHighlight;
         private static SectionRepresentation s_currentSection;
+
+        private static readonly Dictionary<Type, Type> RepresentationRelation = [];
 
         static LevelEditorContext()
         {
             s_currentSection = null!;
             CreateAndAddNewSection();
-            GeometryCount = 0;
+            PaisajeObjectTypes = CommonUtilities.FindAllOfInterfaceType(typeof(IDynamic));
             AspectRatio = 1;
             s_vertexHighlight = new();
+            RepresentationRelation.Add(typeof(Entity), typeof(EntityRepresentation));
         }
 
         internal static void CreateAndAddNewSection()
@@ -128,6 +134,12 @@ namespace DazedGUITools.Windows.LevelEditor
                 foreach (var geom in s_sectionGeometry[s_sections[i]])
                     geom?.Draw();
             }
+            for(int d = 0; d < allDynamic.Count; d++)
+            {
+                if (allDynamic[d].NotVisible)
+                    continue;
+                allDynamic[d].Draw();
+            }
             //END DRAWING----------------------
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
@@ -152,12 +164,35 @@ namespace DazedGUITools.Windows.LevelEditor
             tool.Initialize();
         }
 
-        internal static void SelectGeometry(GeometryRepresentation geom)
+        internal static void SelectObject(ILESelectableObject? obj)
         {
-            SelectedGeometry = geom;
+            CurrentObject = obj;
             SelectedVertexIndex = 0;
+            TrySetMaximumVertCount();
+        }
+
+        private static void TrySetMaximumVertCount()
+        {
+            if (CurrentObject == null || !CommonUtilities.IsOfInterface(CurrentObject, typeof(IGeometryRepresentation)))
+                return;
+            SelectedGeometry = (GeometryRepresentation) CurrentObject;
             s_maximumVertexIndex = SelectedGeometry.VertexCount - 1;
         }
+
+        // internal static void SelectGeometry(GeometryRepresentation geom)
+        // {
+        //     SelectedGeometry = geom;
+        //     CurrentObject = geom;
+        //     SelectedVertexIndex = 0;
+        //     s_maximumVertexIndex = SelectedGeometry.VertexCount - 1;
+        // }
+
+        // internal static void SelectDynamicObject(IDynamicRepresentation dyn)
+        // {
+        //     s_currentObject = dyn;
+        //     // ? if it is dynamic geometry, should it be also referenced like this?
+        //     SelectedGeometry = null;
+        // }
 
         internal static void ChangeVertex(bool add = true)
         {
@@ -190,7 +225,7 @@ namespace DazedGUITools.Windows.LevelEditor
             else
                 geoL = [quad];
             s_sectionGeometry[CurrentlySelectedSection] = geoL;
-            SelectGeometry(quad);
+            SelectObject(quad);
             GeometryCount++;
         }
 
@@ -216,6 +251,26 @@ namespace DazedGUITools.Windows.LevelEditor
             float y = v1.Y - v2.Y;
             var pos = new Vector2(x * Artist.NormalizedWidth, y * Artist.NormalizedHeight);
             SimpleRay unProjected = MathTeacher.UnProject(LevelEditorCamera.Projection, LevelEditorCamera.View, Width, Height, pos);
+        }
+
+        internal static void CreateDynamicObject(Type baseType, Type obj)
+        {
+            Type instantiateOfType = RepresentationRelation[baseType];
+            var newObj = (IDynamicRepresentation)Activator.CreateInstance(instantiateOfType, [obj])!;
+            allDynamic.Add(newObj);
+            SelectObject(newObj);
+            Scriptorium.Warn($"{obj.Name} | Instantiated");
+        }
+
+        internal static void DestroyDynamic(IDynamicRepresentation rep)
+        {
+            if (!allDynamic.Contains(rep))
+            {
+                Scriptorium.Error("Representation value is not present in level");
+                return;
+            }
+            allDynamic.Remove(rep);
+            rep.Destroy();
         }
     }
 }

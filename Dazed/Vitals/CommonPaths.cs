@@ -10,7 +10,8 @@
         public const string ResourcesFolderName = "resources";
         public const string FontsFolderName = "fonts";
         public const string MapDataFolderName = "maps";
-        public const string ExposedDataFile = "expDat.data";
+        public const string ExposedDataFile = ExposedDataFileNoExtension + ".data";
+        public const string ExposedDataFileNoExtension = "expDat";
         public const string LogsFolderName = "logs";
         public const string MaterialFolderName = "materials";
         /// <summary>

@@ -1,1 +1,1 @@
-{"f":["PlayerEntity|Player material data","PlayerEntity|Player mesh","ExceptionThrownMessage|defaultFont","Artist|missing texture path"],"d":["resources\\materials\\Default.material","resources\\Angor.fbx","resources\\DefaultFont.fd","resources\\missingtexture.jpg"]}
+{"f":["ExceptionThrownMessage|defaultFont","Artist|missing texture path"],"d":["resources\\fonts\\DefaultFont.fd","resources\\missingtexture.jpg"]}

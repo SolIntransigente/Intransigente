@@ -24,18 +24,19 @@ namespace DazedGUITools.Windows.LevelEditor
 
         private static LevelEditorToolsWindow s_toolsWindow = null!;
         private static LevelEditorSectionsWindows s_sectionsWindow = null!;
-        private static LevelEditorGeometryWindow s_geometryWindow = null!;
+        private static LevelEditorPropertiesWindow s_geometryWindow = null!;
         public static float AspectRatio { get; internal set; } = 1;
 
         private static readonly KeyCombination PreviousVertexCombo = new (Keys.LeftControl, Keys.Space);
         private static readonly KeyCombination FlipNormalCombo = new (Keys.LeftControl, Keys.F);
+        private static readonly KeyCombination InstantiateObjectCombo = new (Keys.LeftControl, Keys.N);
 
         protected override void OnInitialize()
         {
             LevelEditorContext.Initialize((short)StartingSize.X, (short)StartingSize.Y);
             s_toolsWindow = new LevelEditorToolsWindow();
             s_sectionsWindow = new LevelEditorSectionsWindows();
-            s_geometryWindow = new LevelEditorGeometryWindow();
+            s_geometryWindow = new LevelEditorPropertiesWindow();
         }
         protected override void Draw()
         {
@@ -120,6 +121,8 @@ namespace DazedGUITools.Windows.LevelEditor
                 LevelEditorContext.ChangeVertex();
             if (FlipNormalCombo.FirstHoldSecondPressed())
                 LevelEditorContext.SelectedGeometry?.FlipNormal();
+            if (InstantiateObjectCombo.FirstHoldSecondPressed())
+                _ = new LevelEditorInstancingWindow();
         }
     }
 }
